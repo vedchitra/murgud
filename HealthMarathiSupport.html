@@ -1,1482 +1,1176 @@
 <!DOCTYPE html>
 <html lang="en" translate="no">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Business Submission Form</title>
-  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.js"></script>
-<link href="https://cdn.jsdelivr.net/npm/quill@2.0.3/dist/quill.snow.css" rel="stylesheet">
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <style>
-     
-body {
-  font-family: Arial, sans-serif;
-  text-align: center;
-  background-color: #ffffff;
-  margin: 0;
-  padding: 0;
-}
-
- 
-.container {
-  max-width: 900px;        
-  margin: 0 auto;          
-  background: white;
-  padding: 20px;
-  text-align: left;
-  border-radius: 6px;
-}
-
- 
-input, textarea, select {
-  display: block;
-  width: 100% !important;  
-  box-sizing: border-box;  
-  padding: 12px;
-  font-size: 18px;
-  margin: 10px 0;
-  border: 1px solid #000000;
-  border-radius: 5px;
-  background-color: #ffffff;
-}
-
- 
-input[type="file"] {
-  padding: 8px;
-  font-size: 16px;
-}
-
- 
-label {
-  font-weight: bold;
-  display: block;
-  margin-bottom: 5px;
-}
-
-.required::after {
-  content: " *";
-  color: red;
-}
-
-.error {
-  color: #FF2C2C;
-  font-size: 14px;
-}
-
- 
-.ql-container {
-  min-height: 200px; 
-  max-height: 400px; 
-  height: auto; 
-  overflow-y: auto; 
-  -webkit-overflow-scrolling: touch;
-  border-radius: 5px;
-  border: 1px solid #000000;
-}
-
-.ql-editor {
-  font-size: 16px !important;
-  line-height: 1.5;
-  user-select: text;
-  -webkit-user-select: text;
-}
-
- 
-@media (min-width: 768px) {
-  .ql-editor {
-    font-size: 18px !important;
-  }
-}
-
- 
-button {
-  background-color: #1a24be;
-  color: white;
-  border: none;
-  padding: 12px;
-  cursor: pointer;
-  border-radius: 5px;
-  font-size: 18px;
-  margin-top: 10px;
-  width: 100%;
-}
-button:hover {
-  background-color: #1f2be5;
-}
-
- 
-.toggle-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 12px;
-  background: #f7f7f7 !important;
-  color: #1a24be !important;
-  border-radius: 5px;
-  width: 97%;
-  border: 1px solid #1a24be !important;
-  margin: 10px 0;
-}
-.toggle-btn span {
-  font-size: 22px !important;
-  font-weight: bold !important;
-  color: #1a24be !important;
-  margin-left: 10px;
-}
-
- 
-.horizontal-layout {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.horizontal-layout span, 
-.horizontal-layout i {
-  font-size: 14px;
-  font-weight: bold;
-}
-.horizontal-layout input {
-  flex: 1;
-  font-size: 14px;
-  font-weight: bold;
-  color: blue;
-}
-
- 
-#profileID {
-  background-color: #f5f5f5;
-  border: 1px solid #333;
-  padding: 6px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
- 
-.popup {
-  display: none;
-  position: fixed;
-  z-index: 9999;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.6);
-}
-
- 
-.popup-content {
-  background: #fff;
-  margin: 5% auto;
-  width: 90%;
-  max-width: 600px;
-  border-radius: 12px;
-  box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-  font-size: 16px;
-  line-height: 1.6;
-  max-height: 80vh;    
-  display: flex;
-  flex-direction: column;
-}
-
- 
-.popup-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
-  border-bottom: 1px solid #ddd;
-  background: #f7f7f7;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  border-top-left-radius: 12px;
-  border-top-right-radius: 12px;
-}
-
- 
-.popup .close {
-  font-size: 24px;
-  font-weight: bold;
-  cursor: pointer;
-  color: #333;
-}
-
- 
-#popupText {
-  padding: 16px;
-  overflow-y: auto;
-  flex: 1;
-  min-height: 150px;
-  max-height: calc(80vh - 60px);  
-  background: #fafafa;
-  border-bottom-left-radius: 12px;
-  border-bottom-right-radius: 12px;
-  white-space: pre-wrap;  
-}
-
- 
-@media (max-width: 768px) {
-  input, textarea, .ql-editor {
-    font-size: 16px;
-  }
-}
-
-@media (max-width: 480px) {
-  body {
-    padding: 10px;
-  }
-}
-
-
-  </style>
- <script>
-    let uploadedImages = {};
-    let isUpdating = false;
-
-    function generateProfileID() {
-      let businessNameEnglish = document.getElementById("businessNameEnglish").value.trim();
-      if (!businessNameEnglish) return;
-
-      google.script.run.withSuccessHandler(function(uniqueID) {
-        document.getElementById("profileID").value = uniqueID;
-      }).generateUniqueProfileID(businessNameEnglish);
-    }
-
-    
-    function uploadImage(fileInput, imageIndex) {
-  let file = fileInput.files[0];
-  if (!file) return;
-
-  let allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
-  if (!allowedTypes.includes(file.type)) {
-    alert("Only JPG, JPEG, PNG and WEBP images are allowed.");
-    fileInput.value = "";
-    return;
-  }
-
-  let reader = new FileReader();
-  reader.readAsDataURL(file);
-  reader.onload = function (event) {
-    let img = new Image();
-    img.src = event.target.result;
-
-    img.onload = function () {
-      let compressedDataUrl;
-      if (imageIndex === 1) {
-        compressedDataUrl = cropAndCompressProfileImage(img); 
-      } else {
-        compressedDataUrl = compressImage(img); 
-      }
-
-      let base64Data = compressedDataUrl.split(',')[1];
-
-      
-      let originalName = file.name;
-      let newName = originalName.replace(/\.[^/.]+$/, "") + ".webp";
-
-      uploadedImages["image" + imageIndex] = { 
-        name: newName, 
-        data: base64Data 
-      };
-
-      document.getElementById("imageStatus" + imageIndex).innerText = "✔ Converted to WebP & Uploaded";
-    };
-  };
-
-  document.getElementById("imageStatus" + imageIndex).innerText = "Converting to WebP...";
-}
-
-
-  
-  function cropAndCompressProfileImage(img) {
-    const size = 1024;
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-
-    let cropSize = Math.min(img.width, img.height);
-    let offsetX = (img.width - cropSize) / 2;
-    let offsetY = (img.height - cropSize) / 2;
-
-    canvas.width = size;
-    canvas.height = size;
-
-    ctx.drawImage(img, offsetX, offsetY, cropSize, cropSize, 0, 0, size, size);
-
-    
-    let quality = 0.8;
-    let dataUrl = canvas.toDataURL("image/webp", quality);
-    let blob = dataURLtoBlob(dataUrl);
-
-    while (blob.size > 750 * 1024 && quality > 0.3) {
-      quality -= 0.05;
-      dataUrl = canvas.toDataURL("image/webp", quality);
-      blob = dataURLtoBlob(dataUrl);
-    }
-
-    return dataUrl;
-  }
-
-  
-  function compressImage(img) {
-    let canvas = document.createElement('canvas');
-    let ctx = canvas.getContext('2d');
-
-    let maxWidth = 1024;
-    let maxHeight = 1024;
-    let width = img.width;
-    let height = img.height;
-
-    if (width > height) {
-      if (width > maxWidth) {
-        height *= maxWidth / width;
-        width = maxWidth;
-      }
-    } else {
-      if (height > maxHeight) {
-        width *= maxHeight / height;
-        height = maxHeight;
-      }
-    }
-
-    canvas.width = width;
-    canvas.height = height;
-    ctx.drawImage(img, 0, 0, width, height);
-
-    
-    let quality = 0.8;
-    let dataUrl = canvas.toDataURL("image/webp", quality);
-    let blob = dataURLtoBlob(dataUrl);
-
-    while (blob.size > 750 * 1024 && quality > 0.3) {
-      quality -= 0.05;
-      dataUrl = canvas.toDataURL("image/webp", quality);
-      blob = dataURLtoBlob(dataUrl);
-    }
-
-    return dataUrl;
-  }
-
-  function dataURLtoBlob(dataURL) {
-    let byteString = atob(dataURL.split(',')[1]);
-    let mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
-    let arrayBuffer = new ArrayBuffer(byteString.length);
-    let uintArray = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < byteString.length; i++) {
-      uintArray[i] = byteString.charCodeAt(i);
-    }
-    return new Blob([arrayBuffer], { type: mimeString });
-  }
-
-        
-    function submitForm() {
-      let formData = {
-        profileID: document.getElementById("profileID").value.trim(),
-        personName: document.getElementById("personName").value,
-        businessName: document.getElementById("businessName").value,
-        businessNameEnglish: document.getElementById("businessNameEnglish").value,
-        businessDescription: document.getElementById("businessDescription").value,
-        businessAddress: document.getElementById("businessAddress").value,
-        marketArea: document.getElementById("marketArea").value,
-        phoneNumber: document.getElementById("phoneNumber").value,
-        emailID: document.getElementById("emailID").value,
-        category1: document.getElementById("category1").value,
-        category2: document.getElementById("category2").value,
-        mobileNumber: document.getElementById("mobileNumber").value,
-        whatsappNumber: document.getElementById("whatsappNumber").value,
-        website: document.getElementById("website").value,
-        facebookPage: document.getElementById("facebookPage").value,
-        youtubeChannel: document.getElementById("youtubeChannel").value,
-        instagram: document.getElementById("instagram").value,
-        googleMap: document.getElementById("googleMap").value,
-		YTVideo1: document.getElementById("YTVideo1").value,
-		YTVideo2: document.getElementById("YTVideo2").value,
-		YTVideo3: document.getElementById("YTVideo3").value,
-		YTVideo4: document.getElementById("YTVideo4").value,
-		YTVideo5: document.getElementById("YTVideo5").value,
-        ...uploadedImages
-      };
-	  
-	  
-  document.querySelectorAll(".error").forEach(el => el.innerText = "");
-
-  
-  let isValid = true;
-
-  
-  if (formData.businessName === "") {
-    document.getElementById("businessNameError").innerText = "Business Name is required";
-    isValid = false;
-  }
-  
-   if (formData.businessNameEnglish === "") {
-    document.getElementById("businessNameEnglishError").innerText = "Business Name in English is required";
-    isValid = false;
-  }
-  if (formData.businessAddress === "") {
-    document.getElementById("businessAddressError").innerText = "Business Address is required";
-    isValid = false;
-  }
-  if (formData.mobileNumber === "") {
-    document.getElementById("mobileNumberError").innerText = "Mobile Number is required";
-    isValid = false;
-  }
-  if (formData.whatsappNumber === "") {
-    document.getElementById("whatsappNumberError").innerText = "WhatsApp Number is required";
-    isValid = false;
-  }
-
-  
-  if (!isValid) {
-    return;
-  }
-	  
-
-      document.getElementById("submitBtn").innerText = "Submitting... Please wait";
-      document.getElementById("submitBtn").disabled = true;
-	  
-
-      google.script.run.withSuccessHandler(function(response) { 
-                alert(response.message);
-                resetForm();
-				
-				
-  document.getElementById('businessForm').style.display = 'none';
-  document.getElementById("HeadingSubmit").style.display = "none";
-  document.getElementById('NewStatus').style.display = 'block';
-  document.getElementById("AddNewBiz-message1").style.display = "block";
-document.getElementById("AddNewBiz-message2").style.display = "block";
-   document.getElementById('addNewBusinessButton').style.display = 'none';
-                             
-				
-
-                let profileURL = "https://murgud.bizc.in/" + response.profileID;
-        let whatsappLink = "https://wa.me/91" + response.whatsappNumber + "?text=" + encodeURIComponent(profileURL);
-
-        let countdownContainer = document.getElementById("countdownContainer");
-        let countdownText = document.getElementById("countdownText");
-        let buttonContainer = document.getElementById("generatedProfileID");
-
-        
-        countdownContainer.style.display = "block";
-        buttonContainer.style.display = "none"; 
-
-        let timeLeft = 50; 
-
-        let countdownInterval = setInterval(function () {
-            countdownText.innerHTML = "<strong>Please wait... " + timeLeft + " seconds remaining</strong>";
-            timeLeft--;
-
-            if (timeLeft < 0) {
-                clearInterval(countdownInterval);
-                countdownText.innerHTML = "डिजिटल  Business Card आणि  Mini Website तयार झाली आहे. खालील <strong>Open URL</strong> ह्या  बटणवर क्लिक करून चेक करा..!<br><br>ही लिंक संबंधित व्यवसायिकाना त्यांच्या WhatsApp वर पाठवून द्या . यासाठी <strong>Share URL to WhatsApp </strong> ह्या  बटणवर क्लिक करा.   "; 
-
-                
-                var openButton = document.createElement("button");
-                openButton.innerText = "Open URL";
-                openButton.onclick = function () {
-                    window.open(profileURL, "_blank");
-                };
-                openButton.style.padding = "10px";
-                openButton.style.marginRight = "10px";
-
-                
-                var whatsappButton = document.createElement("button");
-                whatsappButton.innerText = "Share URL to WhatsApp";
-                whatsappButton.onclick = function () {
-                    window.open(whatsappLink, "_blank");
-                };
-                whatsappButton.style.padding = "10px";
-                whatsappButton.style.background = "green";
-                whatsappButton.style.color = "white";
-                whatsappButton.style.border = "none";
-                whatsappButton.style.borderRadius = "5px";
-                whatsappButton.style.cursor = "pointer";
-				whatsappButton.style.marginRight = "10px";
-
-        
-        var allRecordsButton = document.createElement("button");
-        allRecordsButton.innerText = "All Entry Records";
-        allRecordsButton.onclick = function () {
-            window.open("https://murgud.bizc.in/", "_blank");
-        };
-        allRecordsButton.style.padding = "10px";
-        allRecordsButton.style.background = "black";
-        allRecordsButton.style.color = "white";
-        allRecordsButton.style.border = "none";
-        allRecordsButton.style.borderRadius = "5px";
-        allRecordsButton.style.cursor = "pointer";
-		
-		
-var infoMessage = document.createElement("div");
-infoMessage.innerHTML = "** आणखी दुसऱ्या business ची  माहिती Add करायची असल्यास किंवा माहिती Update करायची असल्यास वर असणाऱ्या <strong>Homepage</strong> बटणवर क्लिक करा.";
-infoMessage.style.marginTop = "25px";
-infoMessage.style.fontSize = "18px";
-infoMessage.style.color = "#e63939";
-
-                
-                buttonContainer.innerHTML = ""; 
-                buttonContainer.appendChild(openButton);
-                buttonContainer.appendChild(whatsappButton);
-				buttonContainer.appendChild(infoMessage); 
-
-                
-                buttonContainer.style.display = "block";
-            }
-        }, 1000); 
-
-    }).submitForm(formData);
-    }
-
-    
-    function resetForm() {
-      document.getElementById("businessForm").reset();
-      uploadedImages = {};
-      quill.root.innerHTML = ""; 
-      document.getElementById("submitBtn").innerText = "Submit";
-      document.getElementById("submitBtn").disabled = false;
-      document.getElementById("updateBtn").style.display = "none";
-      document.getElementById("submitBtn").style.display = "inline-block";
-      document.getElementById("generatedProfileID").innerText = "";
-      isUpdating = false;
-
-  
-  const imageStatuses = document.querySelectorAll("[id^='imageStatus']");
-  imageStatuses.forEach((status) => {
-    status.innerText = "";
-  });
-}
-
-    
-    function updateBusinessDetails() {
-      let formData = {
-        profileID: document.getElementById("profileID").value.trim(),
-        personName: document.getElementById("personName").value,
-        businessName: document.getElementById("businessName").value,
-        businessNameEnglish: document.getElementById("businessNameEnglish").value,
-        businessDescription: document.getElementById("businessDescription").value,
-        businessAddress: document.getElementById("businessAddress").value,
-        marketArea: document.getElementById("marketArea").value,
-        phoneNumber: document.getElementById("phoneNumber").value,
-        emailID: document.getElementById("emailID").value,
-        category1: document.getElementById("category1").value,
-        category2: document.getElementById("category2").value,
-        mobileNumber: document.getElementById("mobileNumber").value,
-        whatsappNumber: document.getElementById("whatsappNumber").value,
-        website: document.getElementById("website").value,
-        facebookPage: document.getElementById("facebookPage").value,
-        youtubeChannel: document.getElementById("youtubeChannel").value,
-        instagram: document.getElementById("instagram").value,
-        googleMap: document.getElementById("googleMap").value,
-		YTVideo1: document.getElementById("YTVideo1").value,
-		YTVideo2: document.getElementById("YTVideo2").value,
-		YTVideo3: document.getElementById("YTVideo3").value,
-		YTVideo4: document.getElementById("YTVideo4").value,
-		YTVideo5: document.getElementById("YTVideo5").value,
-        ...uploadedImages
-      };
-	  
-	  
-  document.querySelectorAll(".error").forEach(el => el.innerText = "");
-
-  
-  let isValid = true;
-
-  
-  if (formData.businessName === "") {
-    document.getElementById("businessNameError").innerText = "Business Name is required";
-    isValid = false;
-  }
-   if (formData.businessNameEnglish === "") {
-    document.getElementById("businessNameEnglishError").innerText = "Business Name in English is required";
-    isValid = false;
-  }
-  if (formData.businessAddress === "") {
-    document.getElementById("businessAddressError").innerText = "Business Address is required";
-    isValid = false;
-  }
-  if (formData.mobileNumber === "") {
-    document.getElementById("mobileNumberError").innerText = "Mobile Number is required";
-    isValid = false;
-  }
-  if (formData.whatsappNumber === "") {
-    document.getElementById("whatsappNumberError").innerText = "WhatsApp Number is required";
-    isValid = false;
-  }
-
-  
-  if (!isValid) {
-    return;
-  }
-	  
-	  
-
-      document.getElementById("updateBtn").innerText = "Updating... Please wait";
-      document.getElementById("updateBtn").disabled = true;
-
-
-  google.script.run.withSuccessHandler(function(response) { 
-                alert(response.message);
-                resetForm();
-				
-				
-   document.getElementById('NewStatus').style.display = 'block';
-   document.getElementById("UpdateBiz-message1").style.display = "block";
-document.getElementById("UpdateBiz-message2").style.display = "block";
-   document.getElementById('businessForm').style.display = 'none';
-   document.getElementById("HeadingUpdate").style.display = "none";
-  document.getElementById('SearchData').style.display = 'none';
-  document.getElementById('resultList').style.display = 'none';
-   document.getElementById('addNewBusinessButton').style.display = 'none';
-
-				
-
-        let profileURL = "https://murgud.bizc.in/" + response.profileID;
-        let whatsappLink = "https://wa.me/91" + response.whatsappNumber + "?text=" + encodeURIComponent(profileURL);
-
-        let countdownContainer = document.getElementById("countdownContainer");
-        let countdownText = document.getElementById("countdownText");
-        let buttonContainer = document.getElementById("generatedProfileID");
-
-        
-        countdownContainer.style.display = "block";
-        buttonContainer.style.display = "none"; 
-
-        let timeLeft = 50; 
-
-        let countdownInterval = setInterval(function () {
-            countdownText.innerHTML = "<strong>Please wait... " + timeLeft + " seconds remaining</strong>";
-            timeLeft--;
-
-            if (timeLeft < 0) {
-                clearInterval(countdownInterval);
-                countdownText.innerHTML = "व्यवसायाची माहिती अपडेट झाली आहे. खालील <strong>Open URL</strong> ह्या  बटणवर क्लिक करून चेक करा..!<br><br>ही लिंक संबंधित व्यवसायिकाना त्यांच्या WhatsApp वर पाठवून द्या . यासाठी <strong>Share URL to WhatsApp</strong> ह्या  बटणवर क्लिक करा."; 
-
-                
-                var openButton = document.createElement("button");
-                openButton.innerText = "Open URL";
-                openButton.onclick = function () {
-                    window.open(profileURL, "_blank");
-                };
-                openButton.style.padding = "10px";
-                openButton.style.marginRight = "10px";
-
-                
-                var whatsappButton = document.createElement("button");
-                whatsappButton.innerText = "Share URL to WhatsApp";
-                whatsappButton.onclick = function () {
-                    window.open(whatsappLink, "_blank");
-                };
-                whatsappButton.style.padding = "10px";
-                whatsappButton.style.background = "green";
-                whatsappButton.style.color = "white";
-                whatsappButton.style.border = "none";
-                whatsappButton.style.borderRadius = "5px";
-                whatsappButton.style.cursor = "pointer";
-				whatsappButton.style.marginRight = "10px";
-
-        
-        var allRecordsButton = document.createElement("button");
-        allRecordsButton.innerText = "All Entry Records";
-        allRecordsButton.onclick = function () {
-            window.open("https://murgud.bizc.in/", "_blank");
-        };
-        allRecordsButton.style.padding = "10px";
-        allRecordsButton.style.background = "gray";
-        allRecordsButton.style.color = "blue";
-        allRecordsButton.style.border = "none";
-        allRecordsButton.style.borderRadius = "5px";
-        allRecordsButton.style.cursor = "pointer";
-		
-		
-var infoMessage = document.createElement("div");
-infoMessage.innerHTML = "** आणखी दुसऱ्या business ची माहिती Update करायची असल्यास वर असणाऱ्या <strong>Homepage</strong> बटणवर क्लिक करा.";
-infoMessage.style.marginTop = "25px";
-infoMessage.style.fontSize = "18px";
-infoMessage.style.color = "#e63939";
-
-                
-                buttonContainer.innerHTML = ""; 
-                buttonContainer.appendChild(openButton);
-                buttonContainer.appendChild(whatsappButton);
-				buttonContainer.appendChild(infoMessage); 
-
-                
-                buttonContainer.style.display = "block";
-            }
-        }, 1000); 
-
-    }).updateBusiness(formData);
-    }
-
-
-
-
-
-    
-function searchBusiness() {
-    let searchNumber = document.getElementById("searchNumber").value.trim();
-    let resultList = document.getElementById("resultList");
-
-    
-    if (!/^\d+$/.test(searchNumber)) {
-        alert("Please enter a valid mobile number.");
-        return;
-    }
-
-    
-    resultList.innerHTML = "<li>Searching... Please wait</li>";
-
-    google.script.run.withSuccessHandler(function(results) {
-        resultList.innerHTML = ""; 
-
-        if (results.length === 0) {
-            resultList.innerHTML = "<li style='color: red;'>Business not found!</li>";
-            return;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta name="google" content="notranslate">
+    <title>Health Marathi Support - Business Details</title>
+    <meta name="description" content="&lt;p&gt;आमचे हॉस्पिटल आपल्या कुटुंबाच्या आरोग्यासाठी सर्वोत्तम सेवा प्रदान करते. आमच्याकडे अनुभवी आणि कुशल डॉक्टर आहेत जे आपल्याला सर्व प्रकारच्या आरोग्य समस्यांमध्ये मदत करू शकतात.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;आमच्या हॉस्पिटलमध्ये ताप, सर्दी, खोकला, डोकेदुखी, पोटदुखी, अतिसार, उलट्या, मूळव्याध, बद्धकोष्ठता, मुतखडा, कावीळ, टायफॉइड, डेंग्यू, मलेरिया, अंगदुखी, सांधेदुखी, अस्थमा, लठ्ठपणा, उच्च रक्तदाब, मधुमेह अशा अनेक आरोग्य समस्यांवर उपचार केले जातात.&lt;/p&gt;&lt;p&gt;&lt;br&gt;&lt;/p&gt;&lt;p&gt;Dr. (Full Name)&lt;/p&gt;&lt;p&gt;Qualification - ( M.D. / M.B.B.S. / B.A.M.S. / B.H.M.S. etc)&lt;/p&gt;&lt;p&gt;Registration No. (Number)&lt;/p&gt;">
+    <meta property="og:image" content="https://murgud.bizc.in/assets/images/HealthMarathiSupportp1.webp">
+
+    <link rel="icon" type="image/png" href="https://murgud.bizc.in/assets/images/HealthMarathiSupportp1.webp">
+	
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
         }
-
-        results.forEach(result => {
-            let listItem = document.createElement("li");
-            listItem.innerText = `${result.businessNameEnglish} : ${result.businessAddress} - ${result.mobileNumber}`;
-            listItem.onclick = () => selectBusiness(result);
-            resultList.appendChild(listItem);
-        });
-    }).searchBusinessByMobile(searchNumber);
+		a {
+    text-decoration: none;  
 }
 
+a:hover {
+    text-decoration: none;  
+}
+.card {
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .header {
+            background: #0707e3;
+            padding: 40px 0 50px;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            position: relative;
+        }
+        .Business-Photo-1 {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: none;  
+  border: none;    
+}
 
-document.getElementById("searchNumber").addEventListener("input", function() {
-    this.value = this.value.replace(/\D/g, ''); 
-});
+.Business-Photo-1.show {
+  display: block;
+  border: 4px solid white;  
+}
 
-
-
-
-
-
-    
-    function selectBusiness(business) {
-      document.getElementById("profileID").value = business.profileID;
-      document.getElementById("personName").value = business.personName;
-      document.getElementById("businessName").value = business.businessName;
-      document.getElementById("businessNameEnglish").value = business.businessNameEnglish;
-      document.getElementById("businessDescription").value = business.businessDescription;
-      document.getElementById("businessAddress").value = business.businessAddress;
-      document.getElementById("marketArea").value = business.marketArea;
-      document.getElementById("phoneNumber").value = business.phoneNumber;
-      document.getElementById("emailID").value = business.emailID;
-      document.getElementById("category1").value = business.category1;
-      updateCategory2();
-      setTimeout(() => {
-        document.getElementById("category2").value = business.category2;
-      }, 100);
-	  document.getElementById("mobileNumber").value = business.mobileNumber;
-      document.getElementById("whatsappNumber").value = business.whatsappNumber;
-      document.getElementById("website").value = business.website;
-      document.getElementById("facebookPage").value = business.facebookPage;
-      document.getElementById("youtubeChannel").value = business.youtubeChannel;
-      document.getElementById("instagram").value = business.instagram;
-      document.getElementById("googleMap").value = business.googleMap;
-	  document.getElementById("YTVideo1").value = business.YTVideo1;
-	  document.getElementById("YTVideo2").value = business.YTVideo2;
-	  document.getElementById("YTVideo3").value = business.YTVideo3;
-	  document.getElementById("YTVideo4").value = business.YTVideo4;
-	  document.getElementById("YTVideo5").value = business.YTVideo5;
-	  
-	  
-  if (business.businessDescription) {
-    quill.root.innerHTML = business.businessDescription; 
-    document.getElementById("businessDescription").value = business.businessDescription; 
-
-    
-    quill.update(); 
-    quill.on('text-change', function() {
-      document.getElementById("businessDescription").value = quill.root.innerHTML;
-    });
+        .name {
+            margin-top: 80px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        .business-name {
+            margin-top: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: #0707e3;
+        }
+        .business-address, .business-description {
+            width: 80%;
+            margin: 10px auto;
+			margin-bottom: 25px;
+            font-weight: bold;
+        }
+        .business-address {
+            text-align: center;
+        }
+        .business-description {
+            text-align: left;
+        }
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .call {
+            background: #0707e3;
+            color: white;
+			margin-top: 5px;
+			padding: 14px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .whatsapp {
+            background: green;
+            color: white;
+			margin-top: 5px;
+			padding: 14px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .download {
+            background: #0707e3;
+            color: white;
+            width: 100%;
+            margin-top: 0px;
+            padding: 14px;
+            border-radius: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+		
+        .social-icons {
+            background: #0707e3;
+            padding: 10px;
+            border-radius: 15px;
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .social-icon {
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            width: 20%;
+        }
+        .social-icon i {
+            font-size: 20px;
+            margin-bottom: 5px;
+        }
+		.WE-links1 {
+		text-align: center;  
+		}
+		.WE-links2 {
+		text-align: center;  
+		}
+		.WE-icon {
+		color: #0707e3;          
+    font-weight: bold;    
+    text-decoration: none;
+    margin: 0 10px;       
   }
-
-  
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-  
-          document.getElementById("BusinessEngNameLabel").style.display = "none";
-        document.getElementById("businessNameEnglish").style.display = "none";
-        document.getElementById("businessForm").style.display = "block";
-		document.getElementById("HeadingUpdate").style.display = "block";
-		document.getElementById("updateBtn").style.display = "block";
-		document.getElementById("submitBtn").style.display = "none";
-      isUpdating = true;
+  .WE-icon i {
+    margin-right: 5px;    
+  }
+  .photo-card {
+      width: 90%;
+      max-width: 800px;
+      background: white;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 15px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      display: none;  
     }
+
+    .photo-card img {
+      width: 100%;
+      border-radius: 15px;
+      border: 4px solid white;
+    }
+
+    .photo-caption {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
+      color: black;
+    }
+
+     
+    .photo-card.show {
+      display: block;
+    }
+		.hairline-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .hairline {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #ccc;
+            margin: 0 10px;
+        }
+        .pro-title {
+            font-weight: bold;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+		.container {
+		width: 90%;
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    }
+    .card.vertical {
+        display: flex;
+        flex-direction: column;
+        align-items: center;  
+    }
+
+    .dropdown {
+            margin-bottom: 15px;
+            width: 100%;
+        }
+        #festivalSelect {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .festival-banner {
+            position: relative;
+            width: 100%;
+            height: auto;
+            background-color: #f0f0f0;
+            border-radius: 0px;
+            overflow: hidden;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .festival-banner img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            display: block;
+        }
+        .festival-details {
+            padding: 15px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .festival-details h2,
+        .festival-details h3,
+        .festival-details strong {
+            margin: 5px 0;
+        }
+        .button-container {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            width: 100%;
+        }
+        #festivalImage {
+    width: 100%;
+    height: auto;
+    display: block;
+    pointer-events: none;  
+    user-select: none;  
+}
+
+        .buttonFB {
+    padding: 10px 15px;
+    background-color: #0707e3;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: none;
+    flex-grow: 1;
+    box-sizing: border-box;
+    text-decoration: bold;
+    text-align: center;
+    align-items: center;  
+    justify-content: center;  
+    gap: 5px;  
+}
+
+.buttonFB i {  
+    font-size: 1.3em;  
+}
+        .buttonFB:hover {
+            background-color: dark#0707e3;
+        }
+        .share-button {
+            background-color: green;
+        }
+        .share-button:hover {
+            background-color: darkgreen;
+        }
+        .icon {
+            margin-right: 5px;
+        }
+        .festival-details .icon {
+            margin-right: 5px;
+        }
+        .non-clickable {
+            background-color: black;
+            border-radius: 10px;
+            padding: 5px 10px;
+            display: inline-block;
+            pointer-events: none;
+            color: white;
+            margin-top: 10px !important;
+        }
+        .non-clickable .icon {
+            color: white;
+            margin-right: 5px;
+        }
+		
+		@media print {
+  body {
+  -webkit-print-color-adjust: exact !important;  
+  print-color-adjust: exact !important;          
+  color-adjust: exact !important;                
+  background: white !important;
+}
+
+.card {
+           width: 95%;
+            box-shadow: none;
+            text-align: center;}
+
+ 
+    .download, .dropdown, #festivalBanner,  .button-container, .formcard, .form-group, .card vertical, .WE-icon, .WE-links2, .photo-caption {
+    display: none !important;
+  }
+  
+   
+  .print-contacts {
+    display: block !important;
+  margin: 15px 0 15px 0px;   
+    font-size: 18px;
+    font-weight: bold;
+    text-align: center;
+  }
+  .print-contacts a {
+    color: #0707e3 !important;
+    text-decoration: none !important;
+    display: block;
+    margin: 5px 0;
+  }
+  .print-contacts i {
+    margin-right: 8px;
+  }
+  
+}
+		
+		
+		form {
+    .form-group { margin-bottom: 12px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, textarea, button {
+      width: 95%; padding: 8px; border: 1px solid #0707e3; border-radius: 5px;
+    }
+    button {
+      background: #0707e3; color: white; font-size: 16px; font-weight: bold; border: none;
+      cursor: pointer; transition: 0.2s;
+    }
+    button:hover { background: black; }
+	}
 	
-	
-
-
-
-  </script>
+	.formcard {
+            width: 90%;
+            max-width: 800px;
+            background: white;
+            margin: 20px auto;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+		
+        @media (max-width: 360px) {
+            .social-icon {
+                width: 45%;
+            }
+			.button-container {
+                flex-direction: column;
+            }
+            .buttonFB, .share-button {
+                width: 100%;
+                margin-top: 5px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    
-<div class="Homepage" id="Homepage">
-    <div class="message-container">
-        <h2 id="thanks-message">Welcome!</h2>
-        <p id="follow-up-message">Create Digital Business Card and Business Mini Website in just 1 Minute..!</p>
-	
-    <button id="addBusinessHomepage">Add New Business Details</button>
-	<button id="updateBusinessHomepage">Update Business Details</button>
-<button id="allEntryRecordsHomepage">All Entry Records</button>
-    </div>
-</div>	
-	
+    <div class="card">
+        <div class="header">
+            <div class="Business-Photo-1" id="businessPhoto1"></div>
 
-<div class="NewStatus" id="NewStatus" style="display: none;">
-    <div class="message-container">
-        <h2 id="AddNewBiz-message1" style="display: none;">Thank You for Your Submission!</h2>
-        <p id="AddNewBiz-message2" style="display: none;">..... </p>
+        </div>
+        <div class="name">Satish Upalkar</div>
+        <div class="business-name"><a href="tel:7498663848">Health Marathi Support</a></div>
+        <p class="business-address">907, Ravalnath Colony, Ajara</p>
 		
-		<h2 id="UpdateBiz-message1" style="display: none;">Thank You for Update Details!</h2>
-        <p id="UpdateBiz-message2" style="display: none;">.....</p>
+		<div class="print-contacts" style="display:none;">
+			<div class="hairline-container">
+        <div class="hairline"></div>
+        <div class="pro-title">Contact Details</div>
+        <div class="hairline"></div></div>
+
+  <a href="tel:7498663848"><i class="fas fa-phone"></i>Mobile: 7498663848</a>
+  <a href="https://wa.me/7498663848"><i class="fab fa-whatsapp"></i> WhatsApp: 7498663848</a><br>
+</div>
 		
-         
-<div id="countdownContainer" style="display: none; margin-top: 20px; font-size: 18px; ">
-    <p id="countdownText" style="color: black;"></p>
-</div>
-
-
-<div id="generatedProfileID" style="display: none; margin-top: 20px;"></div>
-	
-    <button id="addNewBusinessButton" style="display: none;">Add New Business Details</button>
-    </div>
-</div>
-
-
-	<div id="SearchData" style="display: none;">
-    <h2>Search Business</h2>
-    <label>Enter Mobile Number</label>
-    <input type="tel" id="searchNumber" placeholder="Enter Business Mobile Number">
-    <button type="button" id="searchButton" onclick="searchBusiness()">Search</button>
-   <br><br><p>ज्या Business ची माहिती अपडेट करायची आहे, त्या Business चा <strong>मोबाइल नंबर </strong> हा वरील सर्चबार मध्ये लिहून सर्च करा.  त्यानंतर Result List येईल. त्यातून योग्य रिजल्ट  निवडून माहिती अपडेट करावी  . </p><br><br>
-    <ul id="resultList" style="color: #1a24be; font-weight: bold; font-size: 18px;"></ul>
-</div>
-
-
-
-
-      <h2  id="HeadingSubmit" style="display: none;">Business Submission Form</h2>
-	  <h2  id="HeadingUpdate" style="display: none;">Business Update Information Form</h2>
-    <form id="businessForm" style="display: none;">
-	
-
-	
-	  <div style="background-color: #ffffff; border: 0px solid black; padding: 12px; border-radius: 5px; margin-bottom: 15px;">
-
-  <label class="required">Business Name</label>
-	  <span class="error" id="businessNameError"></span>
-      <input type="text" id="businessName" required placeholder="व्यवसायाचे नाव मराठी किंवा English मध्ये लिहा">
-	  
-
-      <label class="required" id="BusinessEngNameLabel">Write Business Name in English</label><span class="error" id="businessNameEnglishError"></span>
-<input type="text" id="businessNameEnglish" required onblur="generateProfileID()"  placeholder="व्यवसायाचे नाव English मध्ये लिहा">
-
-
-    <br><div class="horizontal-layout">
-      <span style="font-size: 14px; font-weight: bold;">Profile ID </span><i class="fas fa-arrow-right"></i>
-      <input type="text" id="profileID" readonly disabled style="flex: 1; padding: 6px; border: 1px solid black; border-radius: 5px; background-color: #ffffff; font-size: 14px; font-weight: bold; color: blue;">
-      </div>
-
-
-      <label>Person Name</label>
-      <input type="text" id="personName" placeholder="व्यवसायिकाचे नाव लिहा.  Mr. Dr. किंवा श्री. अशी Title नावापूर्वी वापरा. ">
-	  
-
-      <label class="required">Mobile Number</label>
-<span class="error" id="mobileNumberError"></span>
-<input type="tel" id="mobileNumber" required placeholder="मोबाइल नंबर येथे लिहा">
-
-
-<label style="display:inline-flex; align-items:center; gap:5px; margin-top:6px;">
-  <input type="checkbox" id="sameAsMobile"><span style="font-size: 14px; ">
-  मोबाइल नंबर व WhatsApp नंबर सेम आहे का?</span>
-</label>
-
-<label class="required">WhatsApp Number</label>
-<span class="error" id="whatsappNumberError"></span>
-<input type="tel" id="whatsappNumber" required placeholder="WhatsApp नंबर येथे लिहा">
-	  
-	  
-	  <label class="required">Business Address</label>
-	  <span class="error" id="businessAddressError"></span>
-      <input type="text" id="businessAddress" required placeholder="व्यवसायाचा पत्ता येथे लिहा">
-
-
-
-<div style="display: none;">
-      <label>Market Area</label>
-      <input type="text" id="marketArea">
-
-      
-	
-	  
-
-      
-      <label class="hidden">Business Description</label>
-      <textarea id="businessDescription" class="hidden"></textarea></div>
-
-      <label>Main Category</label>
-      <select id="category1" onchange="updateCategory2(); clearBusinessInfo();">
-        <option value="">Select Main Category</option>
-        <option value="Store">दुकाने </option>
-        <option value="Services">विविध सेवा - फोटो, वकील </option>
-		<option value="LifeStyleServices">लाईफस्टाईल सर्विसेस - सलून, पार्लर, टेलर</option>
-        <option value="Hospital">डॉक्टर्स / हॉस्पिटल्स</option>
-		<option value="Food">फूड - हॉटेल, बेकरी, केक शॉप </option>
-        <option value="Education">शिक्षण - कॉलेज, क्लासेस </option>
-        <option value="Economic">बँकिंग, विमा, गुंतवणूक व फायनान्स </option>
-		<option value="Real Estate">बांधकाम विषयक - इंजिनियर, बांधकाम साहित्य दुकाने </option>
-        <option value="Transport">वहातूक संबंधी - वाहन खरेदी, गॅरेज </option>
-        <option value="Repair">दुरुस्ती सेवा</option>
-		<option value="Agro">शेती विषयक</option>
-      </select>
-
- <label>Sub-Category</label>
-<select id="category2" onchange="updateCategory3();">
-  <option value="">Select Sub-category</option>
-</select>
-
-
-<div id="subSubContainer" style="display:none;">
-  <label>Sub-Sub Category</label>
-  <select id="category3" onchange="autoFillBusinessInfo()">
-    <option value="">Select Sub-Subcategory</option>
-  </select>
-</div>
-
-
-
-<label>Business Info </label>
-<i class="fas fa-arrow-right"></i>
-<span style="font-size: 14px; font-weight: bold;">
-  व्यवसायाची माहिती जसे वैशिष्टे, उपलब्ध सेवा यांची माहिती खाली लिहा किंवा कॅटेगरी सिलेक्ट केल्यामुळे आलेल्या रेडिमेड माहितीत योग्य तो बदल करा .
-</span>
-<div id="businessInfoEditor"></div>
-<input type="hidden" id="businessDescription" name="businessDescription">
-
-
-
-
-
-      
-
-<div style="background-color: #e6f0ff; border: 0px solid black; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-  <h3>Upload Profile Photo</h3>
-  <i class="fas fa-arrow-right"></i><span style="font-size: 14px; font-weight: bold;">   व्यवसायिकाचा फोटो किंवा दुकानाचा फोटो किंवा लोगो Profile Photo म्हणून वापरू शकता. </span>
-  <span id="imageStatus1" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" 
-         id="image1" 
-         accept="image/jpeg, image/jpg, image/png, image/webp" 
-         onchange="uploadImage(this, 1)" 
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-</div>
-
-      
-	  
-<div style="background-color: #ede6d1; border: 0px solid black; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-  <h3>Upload Business Photos</h3>
-
-  <label for="image2" style="font-weight: bold; display: block; margin-top: 8px;">Business Photo 1</label>
-  <span id="imageStatus2" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" id="image2" accept="image/jpeg, image/jpg, image/png, image/webp"
-         onchange="uploadImage(this, 2)"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-
-  <label for="image3" style="font-weight: bold; display: block; margin-top: 8px;">Business Photo 2</label>
-  <span id="imageStatus3" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" id="image3" accept="image/jpeg, image/jpg, image/png, image/webp"
-         onchange="uploadImage(this, 3)"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-
-  <label for="image4" style="font-weight: bold; display: block; margin-top: 8px;">Business Photo 3</label>
-  <span id="imageStatus4" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" id="image4" accept="image/jpeg, image/jpg, image/png, image/webp"
-         onchange="uploadImage(this, 4)"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-
-  <label for="image5" style="font-weight: bold; display: block; margin-top: 8px;">Business Photo 4</label>
-  <span id="imageStatus5" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" id="image5" accept="image/jpeg, image/jpg, image/png, image/webp"
-         onchange="uploadImage(this, 5)"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-
-  <label for="image6" style="font-weight: bold; display: block; margin-top: 8px;">Business Photo 5</label>
-  <span id="imageStatus6" style="margin-left: 5px; font-size: 14px; color: #333;"></span>
-  <input type="file" id="image6" accept="image/jpeg, image/jpg, image/png, image/webp"
-         onchange="uploadImage(this, 6)"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;">
-
-</div>
-
-			
 		
-<div class="toggle-btn" onclick="toggleSocialMedia()">
-  Add More Details (Social Media, Email, Map, Website, Video links) <span id="toggleIcon">+</span>
-</div><br>
-
-
-<div id="socialMediaContainer" class="social-media-container">
-	  <div style="background-color: #e6f0ff; border: 0px solid black; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-  <h3>Additional Links & Contact</h3>
-  
-  
-  <label for="phoneNumber" style="font-weight: bold; display: block; margin-top: 8px;">Phone Number</label>
-  <input type="tel" id="phoneNumber"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter 2nd Mobile Number">
-
-  
-
-
-		 
-		 <label for="emailID" style="font-weight: bold; display: block; margin-top: 8px;">Email ID</label>
-<input type="email" id="emailID" name="emailID"
-       style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-       placeholder="Enter Email ID"
-       pattern="[a-z0-9._%&#43;-]&#43;@[a-z0-9.-]&#43;\.[a-z]{2,}$"
-       title="Please enter a valid email address">
+		<div class="hairline-container">
+        <div class="hairline"></div>
+        <div class="pro-title">///</div>
+        <div class="hairline"></div></div>
+		
+       <p class="business-description" id="businessDescription"></p>
 	   
+<div id="WEContact" class="WE-links1"></div>
 	   
-	    <label for="googleMap" style="font-weight: bold; display: block; margin-top: 8px;">Google Map Link</label>
-  <input type="url" id="googleMap"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter Google Maps link">
-		 
+	   <div class="buttons">
+            <a href="tel:7498663848" class="button call"><i class="fas fa-phone"></i> Call</a>
+            <a href="https://wa.me/7498663848" class="button whatsapp"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+        </div>
 		
-
-  <label for="facebookPage" style="font-weight: bold; display: block; margin-top: 8px;">Facebook Page Link</label>
-  <input type="url" id="facebookPage"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter Facebook Page URL">
-
-  <label for="youtubeChannel" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Channel Link</label>
-  <input type="url" id="youtubeChannel"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter YouTube Channel URL">
-
-  <label for="instagram" style="font-weight: bold; display: block; margin-top: 8px;">Instagram Link</label>
-  <input type="url" id="instagram"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter Instagram Profile URL">
-
-  <label for="website" style="font-weight: bold; display: block; margin-top: 8px;">Website</label>
-  <input type="url" id="website"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-         placeholder="Enter Website URL">
-</div>
-
+		<div class="buttons">
+            <a href="javascript:void(0)" id="downloadVCF" class="download"><i class="fas fa-download"></i> Save Contact</a>
+        </div>
 	  
-	  <div style="background-color: #ede6d1; border: 0px solid black; padding: 10px; border-radius: 5px; margin-bottom: 15px;">
-  <h3>Add YouTube Video Links</h3>
+        <div class="social-icons" id="socialIcons">
+                                    			        </div><br>
+		
+<div id="WEActions" class="WE-links2"></div>
+    </div>
+	
+	
+	<div class="photo-card" id="photoCard1">
+    <img src="" alt="Business Photo 1">
+    <div class="photo-caption">Health Marathi Support</div>
+  </div>
+  
+  <div class="photo-card" id="photoCard2">
+    <img src="https://murgud.bizc.in/assets/images/HealthMarathiSupportp3.webp" alt="Business Photo 2">
+    <div class="photo-caption">Health Marathi Support</div>
+  </div>
 
-  <label for="YTVideo1" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Video 1</label>
-  <input type="url" id="YTVideo1"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-		 placeholder="Enter YouTube Video Link">
+  <div class="photo-card" id="photoCard3">
+    <img src="" alt="Business Photo 3"> 
+    <div class="photo-caption">Health Marathi Support</div>
+  </div>
+  
+  <div class="photo-card" id="photoCard4">
+    <img src="https://murgud.bizc.in/assets/images/HealthMarathiSupportp5.webp" alt="Business Photo 4">
+    <div class="photo-caption">Health Marathi Support</div>
+  </div>
 
-  <label for="YTVideo2" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Video 2</label>
-  <input type="url" id="YTVideo2"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-		 placeholder="Enter YouTube Video Link">
+  <div class="photo-card" id="photoCard5">
+    <img src="https://murgud.bizc.in/assets/images/HealthMarathiSupportp6.webp" alt="Business Photo 5"> 
+    <div class="photo-caption">Health Marathi Support</div>
+  </div>
 
-  <label for="YTVideo3" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Video 3</label>
-  <input type="url" id="YTVideo3"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-		 placeholder="Enter YouTube Video Link">
-
-  <label for="YTVideo4" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Video 4</label>
-  <input type="url" id="YTVideo4"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-		 placeholder="Enter YouTube Video Link">
-
-  <label for="YTVideo5" style="font-weight: bold; display: block; margin-top: 8px;">YouTube Video 5</label>
-  <input type="url" id="YTVideo5"
-         style="padding: 8px; border: 1px solid black; border-radius: 5px; background-color: #ffffff;"
-		 placeholder="Enter YouTube Video Link">
+  
+	
+<div class="photo-card" id="ytVideoCard1" style="display:none;">
+    <div id="ytVideoContainer1"></div>
+    <div class="photo-caption">Health Marathi Support : Youtube Video</div>
 </div>
 
-	
-
+<div class="photo-card" id="ytVideoCard2" style="display:none;">
+    <div id="ytVideoContainer2"></div>
+    <div class="photo-caption">Health Marathi Support : Youtube Video</div>
 </div>
-      
 
-      <button type="button" id="submitBtn" onclick="submitForm()" style="display:none;">Submit</button>
-      <button type="button" id="updateBtn" onclick="updateBusinessDetails()" style="display:none;">Update Business</button>
-    </form>
-	</div>
+<div class="photo-card" id="ytVideoCard3" style="display:none;">
+    <div id="ytVideoContainer3"></div>
+    <div class="photo-caption">Health Marathi Support : Youtube Video</div>
+</div>
 
-  <script>
-    
+<div class="photo-card" id="ytVideoCard4" style="display:none;">
+    <div id="ytVideoContainer4"></div>
+    <div class="photo-caption">Health Marathi Support : Youtube Video</div>
+</div>
 
-    
-    const categories = {
-"Store": {"जनरल स्टोअर्स किराणा": null, "सराफ दुकाने": null, "मेडिकल दुकाने": ["मेडिकल स्टोअर", "जेनरिक मेडिकल स्टोअर", "आयुर्वेदिक मेडिकल स्टोअर", "होमिओपॅथीक मेडिकल दुकान"], "कापड दुकाने": null, "स्त्रीयांचे कपडे": null, "पुरुषांचे कपडे": null, "स्मार्टफोन - मोबाईल स्टोअर्स": null, "कॉम्पुटर स्टोअर्स": null, "इलेकट्रॉनिक्स स्टोअर्स - होम अप्लायन्सेस": null, "भांडी दुकाने": null, "स्टेशनरी दुकाने": null, "खेळणी दुकाने": null, "गिप्ट व भेटवस्तू  दुकाने": null, "फुटवेअर दुकाने": null, "चष्म्याचे दुकान": null, "घड्याळ दुकाने": null, "लेडीज शॉपी": null, "रंगाची दुकाने": null, "फर्निचर दुकाने": null, "प्लंबिंग साहित्य दुकाने": null, "हार्डवेअर साहित्य दुकाने - स्टील / पत्रे खरेदी": null, "बांधकाम साहित्य दुकाने": null, "टाईल्स फरशीची दुकाने": null, "प्लायवूड दुकाने": null, "प्लॅस्टिक साहित्य दुकाने": null, "इलेक्ट्रिकल फिटिंग साहित्य": null, "सोलर उपकरणे": null, "इन्व्हर्टर": null, "खते, बियाणे दुकाने": null, "पशुखाद्य / जनावरांची औषध दुकाने": null},
-      "Services": {"फोटो स्टुडिओ": null, "प्रिंटिंग / बॅनर": null, "डिजिटल फ्लेक्स बॅनर प्रिंटिंग": null, "ई सेवा": null,  "विमा सल्लागार": null, "टॅक्स कंन्सलटंट": null, "वकील": null, "शेअर मार्केट सल्लागार": null, "सोशल मीडिया मार्केटिंग": null, "वेब डिझाइनर आणि डेव्हलपर": null, "पत्रकार": null, "भटजी - पूजा व  धार्मिक विधी": null, "ज्योतिष / भविष्य / वास्तुशास्त्र": null, "वधू वर सूचक मंडळ": null, "इव्हेंट मॅनेजमेंट / डेकोरेशन": null,  "कार्यक्रम हॉल": null, "वॉटर सप्लायर / पाण्याचा टँकर": null, "गॅस बुकिंग": null, "TV केबल / DTH": null, "सिनेमागृह": null, "ग्रंथालय": null, "कुरिअर": null,"पेस्ट कंट्रोल": null},
-"LifeStyleServices": {"हेअर कटिंग सलून": null, "ब्युटि पार्लर": null, "जेंट्स टेलर्स": null, "लेडिज टेलर्स": null, "लॉन्ड्री": null, "जिम / स्विमींग / योगा क्लासेस": ["जिम", "स्विमींग क्लासेस", "योगा क्लासेस"], "डान्स क्लासेस": null},
-	  "Hospital": {"डॉक्टर्स / हॉस्पिटल्स": null, "प्रसूती व स्त्री-रोग तज्ञ": null, "डोळ्यांचे डॉक्टर": null, "बालरोग तज्ञ": null, "कान नाक घसा तज्ञ": null, "डेंटिस्ट": null, "हाडांचे डॉक्टर": null, "त्वचारोग तज्ञ": null, "जनरल सर्जन": null, "हृद्यविकार तज्ञ": null, "डायबिटीस डॉक्टर": null, "मेंदुचे डॉक्टर": null, "कॅन्सर हॉस्पिटल": null, "किडनी हॉस्पिटल": null, "थायरॉईड": null, "मूळव्याध हॉस्पिटल": null, "IVF / मुल बाळ न होणे": null, "लठ्ठपणा उपचार": null, "आयुर्वेद व पंचकर्म": null, "होमिओपॅथी": null, "निदान लॅब व टेस्ट": null, "सोनोग्राफी / एक्स-रे / MRI स्कॅन": null,"मेडिकल दुकाने": ["मेडिकल स्टोअर", "जेनरिक मेडिकल स्टोअर", "आयुर्वेदिक मेडिकल स्टोअर", "होमिओपॅथीक मेडिकल दुकान"], "चष्म्याचे दुकान": null},
-"Food": {"हॉटेल / रेस्टॉरंट": ["हॉटेल / रेस्टॉरंट - शाकाहारी व मांसाहारी", "हॉटेल + लॉजिंग, कॉन्फरन्स रूम", "शुद्ध शाकाहारी फॅमिली रेस्टॉरंट"], "बेकरी": null, "भेळ वडापाव मिसळ चहा": null, "कॅफे / पिझ्झा": null, "आईस क्रीम / डेअरी प्रॉडक्ट": null, "केक शॉप": null, "चायनीज सेंटर": null, "चिकन / अंडी / मटण शॉप": ["चिकन व अंडी", "मटण शॉप"], "फळे व भाजीपाला": null, "दळप - कांडप": null},
-      "Education": {"खाजगी क्लासेस": ["इंग्लिश स्पीकिंग क्लासेस", "पाचवी ते दहावी क्लासेस", "11 वी आणि 12 वी सायन्स NEET/JEE क्लासेस", "NEET क्लासेस", "JEE क्लासेस", "कॉमर्स आणि CA/CS क्लासेस", "अबॅकस क्लासेस"], "कॉम्प्युटर क्लासेस": ["MS-CIT कॉम्प्युटर कोर्स अधिकृत संस्था", "इतर कॉम्प्युटर कोर्स शिकवणारी संस्था"], "शाळा / नर्सरी - प्ले ग्रुप स्कूल": ["हायस्कूल", "नर्सरी / प्ले ग्रुप स्कूल"], "कॉलेज": ["ज्युनियर कॉलेज", "महाविद्यालय / कॉलेज"], "इंजिनीअरिंग कॉलेज": null, "डिप्लोमा इंजिनीअरिंग": null, "मेडिकल कॉलेज": ["M.B.B.S. मेडिकल कॉलेज", "आयुर्वेद मेडिकल कॉलेज", "होमिओपॅथिक मेडिकल कॉलेज"], "फार्मसी कॉलेज": null, "नर्सिंग / पॅरामेडीकल": null, "हॉटेल मॅनेजमेंट": null, "करिअर अकॅडमी": null, "ITI / टेक्निकल कोर्सेस": null, "BCA / MCA": null, "BBA / MBA": null, "B.Ed कॉलेज": null, "लॉ कॉलेज": null, "कृषी महाविद्यालय": null},
-	  "Economic": {"राष्ट्रीय बँका": null, "सहकारी बँका": null, "पतसंस्था": null, "शेअर मार्केट सल्लागार": null, "विमा सल्लागार": null, "टॅक्स कंन्सलटंट": null},
-"Real Estate": {"इंजिनिअर्स / कंत्राटदार": null, "जागा / घर खरेदी": null, "बांधकाम साहित्य दुकाने": null, "हार्डवेअर साहित्य दुकाने - स्टील / पत्रे खरेदी": null, "प्लायवूड दुकाने": null, "टाईल्स फरशीची दुकाने": null, "प्लंबिंग साहित्य दुकाने": null, "इलेक्ट्रिकल फिटिंग साहित्य": null, "रंगाची दुकाने": null, "किचन ट्रॉली": null, "अल्युमीनियम व ग्लास वर्क्स": null, "बांधकाम कामगार": null,  "वेल्डिंगची कामे": null,  "फरशीची कामे": null, "वायरमन / इलेकट्रीशियनची कामे": null,  "प्लंबर": null, "सुतार": null, "पेंटर": null},
-	  "Transport": {"कार खरेदी": ["मारुती सुझुकी कार शोरूम", "टाटा मोटर्स कार शोरूम", "Hyundai कार शोरुम", "महिंद्रा कार शोरुम", "रेनॉल्ट कार शोरुम"], "टू व्हीलर खरेदी": ["हिरो मोटोकॉर्प बाइक शोरुम", "सुझुकी ॲटोमोबाईल शोरुम", "TVS ॲटोमोबाईल शोरुम", "होंडा टू व्हीलर बाइक शोरुम"], "ट्रॅक्टर, ट्रक, टेम्पो खरेदी": ["सोनालिका ट्रॅक्टर", "स्वराज ट्रॅक्टर शोरुम", "महिंद्रा ट्रॅक्टर शोरुम", "टाटा मोटर्स ट्रक, tampo"], "सायकल मार्ट": null, "पेट्रोल पंप": null, "सर्व्हिस सेंटर / गॅरेज": ["टू व्हीलर", "फोर व्हीलर"], "ट्रॅव्हल्स बस": null, "रिक्षा": null, "कार भाड्याने मिळेल": null, "ट्रॅक्टर / JCB भाड्याने मिळेल": null, "वॉटर सप्लायर / पाण्याचा टँकर": null, "मालवहातूक": null, "बॅटरीज, टायर्स, स्पेयर पार्ट्स": null, "ड्रायव्हिंग स्कूल": null},
-"Repair": {"ईलेक्ट्रॉनिक वस्तूंची दुरुस्ती": null, "मोबाईल दुरुस्ती": null, "कॉम्पुटर दुरुस्ती": null, "सर्व्हिस सेंटर / गॅरेज": ["टू व्हीलर", "फोर व्हीलर"], "प्लंबर": null, "सुतार": null, "वायरमन / इलेकट्रीशियनची कामे": null},
-	  "Agro": {"नर्सरी रोपवाटिका": null, "खते, बियाणे दुकाने": null, "शेती अवजारे व यंत्रे": null, "पशुखाद्य / जनावरांची औषध दुकाने": null, "पोल्ट्री / डेअरी फार्मिंग": null, "अर्थमुव्हर्स - बोअरवेल्स": null, "पशुवैद्यकीय डॉक्टर": null}
-    };
+<div class="photo-card" id="ytVideoCard5" style="display:none;">
+    <div id="ytVideoContainer5"></div>
+    <div class="photo-caption">Health Marathi Support : Youtube Video</div>
+</div>
 
-    const businessInfoTemplates = {
-"जनरल स्टोअर्स किराणा": "आमच्याकडे सर्व प्रकरचा किराणा माल उपलब्ध असतो. आमच्याकडे दर्जेदार धान्य, डाळी, मसाला, चहा -कॉफी पावडर, सुकामेवा, बिस्किटे, हवाबंद पदार्थ याशिवाय डिटर्जंट, साबण, टूथपेस्ट, सौंदर्य प्रसादने आणि गृहोपयोगी वस्तू योग्य दरात मिळतील.",
-"सराफ दुकाने": "सुंदर दागिन्यांचा सुरेख नजराणा...!!!<br>आमच्याकडे सर्व प्रकारचे सोने व चांदीचे दागिने अनेक व्हरायटीज मध्ये उपलब्ध आहेत. तसेच ऑर्डर प्रमाणे दागिने बनवून मिळतील. हॉलमार्क + HUID प्रमाणित शुद्ध सुवर्ण अलंकार मिळविण्याचे एकमेव विश्वसनीय दालन.",
-"मेडिकल स्टोअर": "आमच्याकडे सर्व प्रकारची औषधे मिळतील. डॉक्टरांच्या प्रिस्क्रीप्शननुसार गोळ्या औषधे दिली जातील. तसेच काही औषधे उपलब्ध नसल्यास ते उपलब्ध करून देण्यात येतील.<br><br>याशिवाय सौंदर्य प्रसाधने, टूथपेस्ट, बूस्ट, हॉर्लिक्स, बोर्नविटा, साबण, डायपर पॅंट, नॅपकिन, हॅण्ड वॉश, सॅनिटायझर, बँडेज पट्ट्या, डेटॉल, ग्लुकोज मीटर, बीपी मशीन, वजन काटा वैगेरे साहित्य देखील मिळेल.",
-  "जेनरिक मेडिकल स्टोअर": "जेनेरिक औषध म्हणजे एखाद्या ब्रँड मधील मुळ औषध. त्यामुळे जेनेरिक औषधे ब्रँडेड औषधाप्रमाणेच तीचकीच प्रभावी असतात . मग कशाला घ्यायची महागडी औषधे?<br><br>याशिवाय सौंदर्य प्रसाधने, टूथपेस्ट, बूस्ट, हॉर्लिक्स, बोर्नविटा, साबण, डायपर पॅंट, नॅपकिन, हॅण्ड वॉश, सॅनिटायझर, बँडेज पट्ट्या, डेटॉल, ग्लुकोज मीटर, बीपी मशीन, वजन काटा वैगेरे साहित्य देखील मिळेल.",
-  "आयुर्वेदिक मेडिकल स्टोअर": "आमच्याकडे सर्व प्रकारची आयुर्वेदिक औषधे मिळतील. डॉक्टरांच्या प्रिस्क्रीप्शननुसार गोळ्या औषधे दिली जातील. तसेच काही औषधे उपलब्ध नसल्यास ते उपलब्ध करून देण्यात येतील.",
-  "होमिओपॅथीक मेडिकल दुकान": "आमच्याकडे सर्व प्रकारची होमिओपॅथिक औषधे मिळतील. डॉक्टरांच्या प्रिस्क्रीप्शननुसार गोळ्या औषधे दिली जातील. तसेच काही औषधे उपलब्ध नसल्यास ते उपलब्ध करून देण्यात येतील.",
-"कापड दुकाने": "आमच्याकडे शूटिंग-शर्टिंग, फॅन्सी साड्या, शर्ट, टी-शर्ट, जीन्स, लेडीज टॉप, कुर्ता, नऊवारी साडी, छापील साडी, मॅचींग, परकर, गाऊन, नाईट पॅन्ट, बर्मुडा, थ्री फोर, अंडरगारमेंट, किड्स वियर, मुला-मुलींचे रेडिमेड फॅन्सी ड्रेस, चिल्ड्रन वियर असे सर्व प्रकारचे कपडे मिळतील.<br>कुटुंबातील सर्वांना लागणारे कपडे एकाच ठिकाणी उपलब्ध. तसेच लग्न जथ्थ्याची खास सोय.<br><br>याशिवाय सतरंजी, चादर, बेडशीट, रघ, रजई, स्वेटर, रेनकोट, छत्री, शाल, स्कूल बॅग, प्रवासी बॅग असे साहित्य योग्य व होलसेल दरात मिळेल.",
-"स्त्रीयांचे कपडे": "आमच्याकडे डिझाईनर साड्या, फॅन्सी साड्या, नऊवारी साडी, मॅचिंग, सलवार, घागरा, टॉप, टि-शर्ट, जीन्स, पंजाबी, प्लाझो सेट, वन पीस, कुर्तीज, लेगिन्स, नाईट ड्रेस, गाऊन्स, पटियाला सेट, वेस्टर्न टॉप्स, अंडर गारमेंट आणि ड्रेस मटेरियल इत्यादी सर्व प्रकारचे लेडीज वियर योग्य दरात मिळतील. ",
-"पुरुषांचे कपडे": "आमच्याकडे शूटिंग-शर्टिंग, जीन्स, शर्ट, कॅज्युअल शर्ट, फॉर्मल शर्ट-पँट, टि शर्ट, ट्राउजर्स, फॅन्सी जॅकेट्स, शेरवानी, बर्मुडा, थ्री फोर, अंडरगारमेंट असे पुरुषांसाठी लागणारे सर्व प्रकारचे कपडे मिळतील.",
-"स्मार्टफोन - मोबाईल स्टोअर्स": "आमच्याकडे विविध नामांकित कंपन्यांचे लेटेस्ट स्मार्टफोन्स आणि ऍक्सेसरीज मिळतील. तसेच अर्जंट मोबाईल रिपेअरिंगची सुविधा देखील आमच्याकडे उपलब्ध. ",
-"कॉम्पुटर स्टोअर्स": "आमच्याकडे Dell, HP, Lenovo, Acer, Asus अशा नामवंत कंपन्याचे लेटेस्ट लॅपटॉप्स व डेस्कटॉप्स कॉम्प्यूटर्स मिळतात. तसेच सर्व प्रकारच्या कॉम्प्यूटर ॲक्सेसरीज, प्रिंटर्स / स्कॅनर देखील विक्रीसाठी उपलब्ध. विक्रीपश्चात दुरुस्तीची सेवाही दिली जाते.",
-"इलेकट्रॉनिक्स स्टोअर्स - होम अप्लायन्सेस": "आमच्याकडे सर्व प्रकारची गृहोपयोगी ईलेक्ट्रॉनिक्स उपकरणे मिळतील. फ्रिज, वॉशिंग मशीन, टीव्ही, CCTV कॅमेरे, मिक्सर, ईस्री, फॅन, ईलेक्ट्रॉनिक शेगडी, गॅस शेगडी, ओव्हन, इन्व्हर्टर, सोलर उपकरणे उपलब्ध.<br><br>याशिवाय ईलेक्ट्रॉनिक्स वस्तुंची दुरूस्ती विषयक सेवासुद्धा आमच्याकडे उपलब्द.",
-"भांडी दुकाने": "आमच्याकडे सर्व प्रकारची भांडी मिळतील. स्टेनलेस स्टील, अल्युमिनियम, तांबा आणि पितळेची भांडी, नॉनस्टिकची भांडी, काचेची आणि मातीची भांडी मिळतील. याशिवाय कुकर, मिक्सर, फिल्टर, अपेपोट, एडलीपोट, डोसापॅन, गॅस शेगडी, कढई, तवा अशा गृहोपयोगी वस्तू देखील उपलब्ध.<br><br>लग्नातील बस्त्यासाठी लागणारे सर्व संसार उपयोगी भांडी व साहित्य योग्य दरात मिळण्याचे ठिकाण.",
-"स्टेशनरी दुकाने": "आमच्याकडे सर्व प्रकारचे शैक्षणिक साहित्य व कार्यालयीन स्टेशनरी योग्य दरात मिळेल. आमच्याकडे वह्या, पुस्तके, गाईड्स, पेन, पेन्सिल, कंपास पेटी, कलर, खडू, फेव्हिकोल, कार्बन पेपर, कट पेपर, कॅल्क्युलेटर, मार्कर, स्केचपेन, रजिस्टर, स्कूल बॅग, स्टेपलर, फाईल्स ई. शैक्षणिक साहित्य योग्य दरात मिळेल.",
-"खेळणी दुकाने": "आमच्याकडे सर्व प्रकारचे खेळाचे साहित्य जसे बॅट, बॉल, स्टंप, ट्रॉफी, फुटबॉल, पत्ते, क्युब, बॅडमिंटन, बॅडमिंटन ची फुले, कॅरम, कॅरम पिसा, कॅरम पावडर, नवा व्यापार, सापशिडी, लुडो, बुद्धीबळ तसेच, इतर सर्व खेळांचे साहित्य मिळेल.",
-"गिप्ट व भेटवस्तू  दुकाने": "आमच्याकडे सगळ्या प्रकारचे गिफ्ट, खेळणी, हॅन्ड बॅग, स्कूल बॅग, सायकल, घड्याळ, दिवार घडी, फोटो फ्रेम, बेल्ट, सन ग्लासेस, ब्रासलेट, क्लचर, रिंग्स, चेन पेंडल सेट, सारी पिन, बेबी क्लिप्स, बेबी हेअर बेल्ट, स्लिंग बॅग, हॅन्ड बॅग, हॅन्ड क्लच, टेडी बियर, बेबी वॉकर, ट्रायसायकल, बेबी प्रोडक्ट्स, कटलरी वस्तू, आर्टिफिशियल फ्लॉवर पोट, योगा मॅट, शोपीस, नाईट लॅम्प, इम्पोर्टेड परफ्यूम, वॉलेट आणखी खूप काही..<br><br>एकदा अवश्य भेट द्या…",
-"फुटवेअर दुकाने": "आमच्याकडे सर्व प्रकारचे चप्पल, फॅन्सी शूज, स्कूल शूज, बूट व सॅन्डल, बेल्ट, लेडीज व किड्स शूज होलसेल दरात उपलब्ध.",
-"चष्म्याचे दुकान": "आमच्याकडे सर्व प्रकारचे नंबरचे चष्मे, दर्जेदार गॉगल, ब्ल्यू ब्लॉक, प्रोग्रेसिव, डे नाईट, बायफोकल अशा अनेक प्रकारचे चष्मे योग्य कमी दरात अर्जंट बनवून मिळतील. तसेच कॉम्पुटर साहाय्याने मोफत अचूक डोळे तपासणी केली जाईल.",
-"घड्याळ दुकाने": "आमच्याकडे सर्व प्रकारची घड्याळे, दिवार घडी व स्मार्टवॉच विक्रीसाठी उपलब्ध. घड्याळे दुरुस्तीची सेवाही उपलब्ध.",
-"लेडीज शॉपी": "आमच्याकडे लेडीज वियर, ड्रेस मटेरिअल, गाऊन, लेगिन्स, अंडर गारमेंट, सौंदर्यप्रसाधने, मेकअप साहीत्य, इमिटेशन ज्वेलरी, भेट वस्तू, सजावटीचे साहीत्य तसेच टेलरिंग साठी लागणारे साहित्य योग्य दरात मिळेल. ",
-"रंगाची दुकाने": "तुमचे घर अधिक सुंदर बनवा..<br>आमच्याकडे एशियन पेंट, Nerolac, बर्जर अशा नामवंत कंपन्याचे दर्जेदार पेंट व प्रायमर उपलब्ध. तसेच आमच्याकडे वॉल पुट्टी, रंगकामासाठी लागणारे ब्रश, रोलर असे साहित्य योग्य दरात मिळेल.",
-"फर्निचर दुकाने": "आमच्याकडे सर्व प्रकारचे फर्निचर जसे सोफा सेट, बेड, सिंगल कपाट, कंपनी कपाट, वॉलड्रॉप कपाट, राजराणी कपाट, शोकेस, डायनिंग टेबल, ऑफीस टेबल, ड्रेसिंग टेबल, चेअर, पाट-चौरंग, देव्हारे, रॅक असे फर्निचर अगदी योग्य दरात मिळतील.<br><br>याशिवाय आमच्याकडे दुकान, हॉस्पिटल यासाठी लागणारे फर्निचर देखील उपलब्ध.",
-"प्लंबिंग साहित्य दुकाने": "आमच्याकडे सर्व प्रकारचे प्लम्बिंग मटेरियल मिळते. PVC पाईप, वॉटर टँक, सॅनिटरीवेअर, बाथ फिटिंग, शॉवर मिक्सर, हार्डवेअर मटेरियल असे प्लम्बिंगचे साहित्य योग्य दरात मिळेल.<br><br>सर्व प्रकारचे प्लम्बिंग मटेरियल मिळण्याचे विश्र्वसनीय ठिकाण..",
-"हार्डवेअर साहित्य दुकाने - स्टील / पत्रे खरेदी": "आमच्याकडे बांधकामासाठी लागणारे उच्च प्रतीचे स्टील, सळई, TMT Bars मिळतील. तसेच लोकंडी ॲंगल-चॅनल, पट्टी, ब्राईट बार, प्लेन शिट, नालीदार पत्रे, कलरकोटींग पत्रे, चौकोन पाईप, गोल पाईप, काटेरी तार, जी. आय. तार, चेनलिंक जाळी, बायंडींग वायर , सेंटरींग खिळे यासारखे सर्व प्रकारचे हार्डवेअर मटेरियल देखील मिळेल. ",
-"प्लायवूड दुकाने": "आमच्याकडे नामवंत कंपन्याचे  प्लायवूडचे विविध उत्पादने उपलब्ध आहेत. प्लायवूड हे दर्जेदार, मजबूत आणि टिकावू असून फर्निचर, कपाटे, पार्टिशन, दरवाजे अशा विविध वापरासाठी उपयोगी आहे.<br><br>आमच्याकडे घर, व्यवसाय यासाठी लागणारे सर्व प्रकारचे प्लायवूड योग्य दरात मिळेल.",
-"प्लॅस्टिक साहित्य दुकाने": "आमच्याकडे  प्लॅस्टिकची दर्जेदार उत्पादने उपलब्ध. प्लॅस्टिकची घागर, दुधाच्या कॅना, बादली, खुर्च्या, स्टुल, टीपॉय, रबरी पाईप, चटई, प्लॅस्टिक मग, कुंड्या इत्यादी सर्व उत्पादने एकाच ठिकाणी मिळण्याचे एकमेव ठिकाण.",
-"इलेक्ट्रिकल फिटिंग साहित्य": "आमच्याकडे इलेक्ट्रीक फिटींगचे सर्व प्रकारचे साहित्य जसे वायर, बटन, प्लग, बल्ब, पट्ट्या योग्य दरात मिळेल.<br><br>आमच्याकडे फॅन, मिक्सर, इस्त्री, गिझर, कूलर आदी इलेक्ट्रिक उपकरणांची दुरुस्ती सेवाही उपलब्ध.",
-"सोलर उपकरणे": "आमच्याकडे नामवंत कंपन्याचे सोलर वॉटर हिटर व त्यासाठी लागणारे प्लंबीग मटेरीअल योग्य दरात मिळेल. तसेच सोलर वॉटर हिटर सिस्टीम घराचा स्लॅब, छप्पर, पत्रे कुठेही सिस्टीम योग्यप्रकारे बसवुन देण्यात येईल.<br><br>विक्री व सेवा सर्व काही एकच ठिकाणी उपलब्ध. अधिक माहितीसाठी आजच संपर्क साधा..",
-"इन्व्हर्टर": "आमच्याकडे ल्युमिनस कंपनीचे इन्वर्टर, बॅटरी तसेच ल्युमिनसची सोलार लाईट सिस्टीम मिळेल.<br>विक्री व सेवा सर्व काही एकच ठिकाणी उपलब्ध. अधिक माहितीसाठी आजच संपर्क साधा..",
+<div class="formcard">
 
-
-"फोटो स्टुडिओ": "अर्जंट फोटो, मॉडलींग फोटोग्राफी, आउटडोर फोटोग्राफी तसेच लग्न, वाढदिवस व इतर कार्यक्रमाचे फोटो व व्हिडीओ शुटींग करुन मिळेल.<br>वेडिंग फोटोग्राफी, कॅन्डीड शुटींग आणि प्रोफेशनल व्हिडीओ शुटींगसाठी आजच संपर्क साधा. स्वप्नवत अल्बम डिझायनिंगची हमी! लग्न असो अथवा कोणताही कार्यक्रम, आठवणींना जपुन ठेवणं म्हणजेच फोटो सेशन..<br>चला तर मग वाट कसली पाहताय आजचं तुमचा फोटोग्राफर निवडा..",
-"प्रिंटिंग / बॅनर": "<p>पत्रिका आणि व्हिजिटींग कार्ड छपाई :</p><br>आमच्याकडे लग्नपत्रिका, वाहनांवरील बॅनर, निमंत्रण पत्रिका, वास्तुशांती पत्रिका, यात्रा पत्रिका, बारसे पत्रिका, व्हिजीटींग कार्ड, लेटर हेड यांची अर्जंट छपाई करुन मिळेल.<p>तसेच सर्व प्रकारच्या डिजीटल पत्रिका, सोशल मीडिया बॅनर अर्जंट करून मिळतील. याशिवाय A4 व A3 साईज कलर प्रिंट आणि झेरॉक्स मिळेल. तुमच्या मोबाईलवरील प्रिंट काढून देण्याची सुविधा देखील उपलब्ध. </p><br>चांगली व उत्तम दर्जाची प्रिंटिंग स्वस्त दरात...!",
-"ई सेवा": "<p>आमच्याकडे सर्व प्रकारची ऑनलाइनची कामे करून मिळतील.  </p><br><b>उपलब्ध सुविधा - </b><p>✓ व्यवसाय किंवा दुकानाचे सर्व प्रकारचे लायसन्स जसे शॉप ॲक्ट लायसन्स, उद्योग आधार लायसन्स, फूड लायसन्स काढून मिळेल. <p>✓ MAHA DBT योजना, महामंडळ योजना, पीक विमा, ई श्रम कार्ड, हेल्थ कार्ड, वाहन विमा,गाड्यांचे फास्ट टॅग, ड्रायव्हिंग लायसन्स, ट्रेन टिकिट बुकिंग, पासपोर्ट ह्या संबधित देखील सुविधा आमच्याकडे उपलब्ध. <p>✓ सर्व प्रकारचे ऑनलाईन फॉर्म, भरती परीक्षा फॉर्म, स्कॉलरशिप फॉर्म भरले जातील. <p>✓ PF संदर्भात जीवन प्रमाणपत्र वैगेरे सर्व प्रकारची कामे केली जातील. <p>✓ पॅन कार्ड नोंदणी तसेच Correction करून मिळेल. <p>✓ आधार कार्ड अपडेट करून मिळेल. <p>✓ डिजिटल 7/12, आधार कार्ड प्रिंट काढून मिळेल. <p>✓ कलर प्रिंट आणि झेरॉक्स ची सुविधा उपलब्ध.</p>",
-"डिजिटल फ्लेक्स बॅनर प्रिंटिंग": "<p>आमच्याकडे सर्व प्रकारचे बॅनर डिजाइन तयार करून फ्लेक्स प्रिंट काढून मिळतील. </p><br>डिजिटल फ्लेक्स बॅनर, रेग्युलर फ्लेक्स प्रिंट, स्टार फ्लेक्स प्रिंट, व्हीनाईल प्रिंट, वनवे व्हिजन प्रिंट, ट्रान्सफरंट प्रिंट वैगेरे चांगली व उत्तम दर्जाची बॅनर प्रिंटिंग योग्य दरात करून मिळेल.",
-"भटजी - पूजा व  धार्मिक विधी": "पूजा, होम हवन, लग्नकार्य, वास्तुशांती, बारसे, मुंज, श्राद्ध अशा सर्व प्रकारच्या शास्त्रोक्त धार्मिक विधी करून दिल्या जातील. तसेच ज्योतिष, पंचांग, मुहूर्त, कुंडली काढणे अशा सेवाही उपलब्द.",
-"ज्योतिष / भविष्य / वास्तुशास्त्र": "आमच्याकडे कुंडलीवरून भविष्य, हस्तमामुद्रीक भविष्य, रत्न ज्योतिष, वास्तुशास्त्र, अंकशास्त्र, लालकिताब. यंत्र-मंत्र-रुद्राक्ष, रेकी शास्त्र, डाऊझिंग, टेरो शास्त्र अशा ज्योतिष शास्त्रावर आधारित योग्य सल्ला व मार्गदर्शन केले जाते.<br>आर्थिक चिंता, शैक्षणिक समस्या, नोकरी की व्यवसाय, नोकरीत असमाधान, व्यवसायात हानी, आरोग्य पीडा, वास्तु दोष, वैवाहिक असमाधान, संतती प्रश्न, राजकारण चिंता यासारख्या अनेक कठिण समस्यांसाठी आम्ही ज्योतिष शास्त्राद्वारे अचूक मार्गदर्शन व उपाय सूचवून जीवन सुखी संपन्न व प्रगतीचे मार्ग दाखवू.<br><br>तसेच  आमच्याकडे जन्म पत्रिका, कुंडली तयार करुन मिळेल. याशिवाय तुमची रास आणि ग्रहांची दशा यानुसार कोणते रत्न धारण केले पाहिजे याविषयी अचूक मार्गदर्शन देखील भेटेल.<br>भविष्य जाणून घेण्यासाठी किंवा आपल्या अडचणी सोडविण्यासाठी ज्योतिष सल्ल्यासाठी आजच संपर्क साधा.. ",
-"कार्यक्रम हॉल": "लग्न सोहळा, बारसे, पार्टी, कार्यक्रम यासाठी सर्व सुविधांनी युक्त असा सांस्कृतिक हॉल उपलब्ध.<br><br><hr><br>कार्यक्रमासाठी सर्व सुविधांनी युक्त असे मंगल कार्यालय व कॉन्फरन्स हॉल उपलब्ध.<br>आजच संपर्क साधा ..",
-"वॉटर सप्लायर / पाण्याचा टँकर": "<p>घर, कार्यालये, दुकाने, हॉस्पटल यासाठी बाटलीबंद शुद्ध पिण्याचे पाणी पुरवले जाईल. </p> <p>तसेच लग्न समारंभ, वास्तुशांती साखरपुडा, वाढदिवस, यात्रा अशा कार्यक्रमासाठी शुद्ध पिण्याचे मिनरल पाणी पुरवण्याच्य्या ऑर्डर स्वीकारल्या जातील.</p>",
-"वधू वर सूचक मंडळ": "<p>तुम्ही तुमच्या पाल्ल्याच्या लग्नासाठी योग्य स्थळ शोधत आहात का? किंवा तुम्ही स्वतःसाठी योग्य जोडीदार शोधत आहात का? तर मग आम्ही आपल्या सेवेतचं आहोत. वधू-वर संशोधन ते लग्न हा प्रवास सुखकर होण्यासाठी आपण नक्कीच आमच्या कार्यालयाला भेट द्या..</p> <p>सर्व जातींसाठी तसेच प्रथम / प्रौढ / विधूर / विधवा / घटस्फोटीत / महाराष्ट्रीयन, देशस्थ व कोकणस्थ भरपूर अनुरूप स्थळे..</p>",
-"इव्हेंट मॅनेजमेंट / डेकोरेशन": "आमच्याकडे वाढदिवस, साखरपुडा, डोहाळे जेवण, बारसे, लग्न व इतर कार्यक्रमांचे डेकोरेशन करून मिळेल.<br><br>आमच्याकडे सर्व प्रकारचे आणि तुम्हाला हवे तसे डेकोरेशन केले जाते .सगळ्यात बेस्ट डेकोरेशन , बेस्ट क्वालिटीचे आणि यूनिकनेस आम्ही देतो<p>एकदा नक्की भेट द्या.. ",
-"कुरिअर": "आमच्याकडे डोमेस्टिक, नॅशनल व इंटरनॅशनल कुरिअर सेवा उपलब्ध.",
-"सिनेमागृह": "सर्व सुविधा युक्त असे आमचे थियटर असून बॉलीवूड, मराठी भाषिक तसेच साऊथ आणि हॉलीवूडचे नवनवीन सिनेमे थियटरमध्ये प्रदर्शित होत असतात.<br><br><b>आमची वैशिष्ट्ये -</b><p>- आरामदायी सीट,<p>- अप्रतिम चित्रपट क्वालिटी, जबरदस्त साऊंड सिस्टीम, भव्य पडदा,<p>- बाईक आणि कार पार्किंगसाठी मोठी जागा</p><br>एकदा नक्की भेट द्या..",
-"ग्रंथालय": "<p>ज्ञानाचा खजिना, तुमच्या उंबरठ्यावर!</p> <p>आमच्या वाचनालयात विविध प्रकारची पुस्तके, कादंबरी, नियतकालिके आणि इतर वाचन साहित्य उपलब्ध आहे. आमच्याकडे सर्व वयोगटातील वाचकांसाठी काहीतरी नक्कीच आहे, ज्यात कथा, कविता, नाटक, इतिहास, विज्ञान, कला, आणि बरेच काही समाविष्ट आहे. </p> <p><b>आमची वैशिष्ट्ये - </b><p>- विस्तृत पुस्तक आणि नियतकालिकांचे संग्रह <p>- शांत आणि आरामदायी वातावरण <p>- अनुभवी आणि मदतनीस कर्मचारी <p>- विविध कार्यक्रम आणि कार्यशाळा <p>- मुलांसाठी एक विशेष विभाग <p>- सदस्यत्वाचे अनेक फायदे </p> <p>आमच्या वाचनालयात आजच नोंदणी करा आणि वाचनाचा आनंद घ्या!</p>",
-"गॅस बुकिंग": "गॅस बुकिंगची काळजी विसरून जा! तुम्हाला सोयीस्कर आणि वेळेवर LPG गॅस सिलेंडर देण्याची जबाबदारी आमची..! <p>आम्ही HP गॅस / इंडेण गॅस चे अधिकृत वितरक आहोत. आम्ही अनेक वर्षांपासून ग्राहकांना गॅस बुकिंग आणि वेळेवर गॅस सिलेंडर देण्याची सेवा देत आहोत. <p> <p><b>आमची वैशिष्ट्ये - </b><p>- ऑनलाइन आणि ऑफलाइन बुकिंग पर्याय <p>- वेळेवर गॅस सिलेंडरची डिलिव्हरी <p>- जलद आणि सुरक्षित वितरण <p>- विनम्र व कुशल कर्मचारी",
-"TV केबल / DTH": "TV केबल नेटवर्कसाठी आजच आमच्याशी संपर्क साधा",
-"पेस्ट कंट्रोल": "झुरळ, मुंग्या, ढेकूण, पाल, वाळवीला कंटाळलात? आता टेन्शन नको... ! तुमचे घर ठेवा अगदी सुरक्षित...<br>उपद्रवी ढेकूण, डास, मुंगी, झुरळ, माशी, कोळी, पिसू, पाल, उंदीर, घूस यापासून, मुक्तता मिळविण्यासाठी आजच आमच्याशी संपर्क साधा.. ",
-"विमा सल्लागार": "आपल्या परिवाराच्या सुरक्षेसाठी आजच आपला जिवन विमा आणि आरोग्य विमा निश्चित करून घ्या.<br>अधिक माहितीसाठी आजच संपर्क साधा..",
-"टॅक्स कंन्सलटंट": "टॅक्स कंन्सलटंट आणि अकौंटींग सर्व्हिसेस",
-"वकील": "कायदेविषयक सल्लागार<br>मालमत्तेचे विवाद, कर्जांचे विवाद, करारांचे विवाद, वारस हक्क, कुटुंब विवाद, अपघातांचे विवाद अशा कोणत्याही प्रकरणांमध्ये कायद्याशी संबंधित काहीही समस्या असल्यास, आमच्याशी संपर्क साधा. ",
-"शेअर मार्केट सल्लागार": "शेअर मार्केट बरोबरचं SIP, म्युच्युअल फंड आणि गुंतवणूक यावर तज्ञांकडून योग्य सल्ला व मार्गदर्शन मिळेल.<br>अधिक माहितीसाठी आजच संपर्क साधा..",
-"सोशल मीडिया मार्केटिंग": "सोशल मीडिया बॅनर करून मिळेल..<br>आमच्याकडे सोशल मीडिया बॅनर व डिजीटल पत्रिका अर्जंट करून मिळतील. फेसबुक, व्हॉट्सॲप यावर अपलोड करण्यासाठी लागणारे जाहिरात बॅनर, शुभेच्छा बॅनर तयार करून मिळतील.",
-"वेब डिझाइनर आणि डेव्हलपर": "तुमच्या व्यवसायासाठी आकर्षक आणि प्रभावी वेबसाइट तयार करा, तेही माफक दरात ..<br>आजच्या डिजिटल युगात, आपल्या व्यवसायासाठी एक मजबूत ऑनलाइन उपस्थिती असणे आवश्यक आहे. आपली वेबसाइट ही तुमच्या ब्रँडची पहिली छाप आहे आणि ती तुमच्या ग्राहकांना आकर्षित करण्यासाठी आणि त्यांना तुमच्याशी जोडण्यासाठी महत्त्वाची आहे.<br><br>तुमच्या व्यवसायाला ऑनलाइन घेऊन जा! आम्ही देतो कस्टम डिझाइन, मोबाईल-फ्रेंडली वेबसाइट, SEO, ई-कॉमर्स आणि सुरक्षा - सर्वकाही एकाच छताखाली. आम्ही आपल्या गरजेनुसार उत्तम वेबसाइट बनवून देऊ.",
-"पत्रकार": "दैनिक सकाळ / लोकमत / पुढारी मध्ये स्थानिक पत्रकार",
-"हेअर कटिंग सलून": "आमच्याकडे हेअर कटींग व दाढी, लेटेस्ट हेअर स्टाईल्स, हेअर कलर, दाढी व मिशी स्टाईल, हेअर स्पा, फेशियल, मेकअप, कॉस्मेटिक अशा सर्वोत्तम सलून सेवा उपलब्ध.<br>एकदा आवश्य भेट द्या..",
-"ब्युटि पार्लर": "आमच्याकडे सर्व प्रकारचे फेशियल, ब्लीच, हेयर कट, हेयर कलरिंग, नखे स्टाइलिंग अशा ब्युटी पार्लरच्या विविध सेवा उपलब्ध. लग्नसमारंभ, ब्राइडल मेकअप, साईड्स मेहेंदी, साखरपुडा, बारसे व इतर सर्व शुभकार्याच्या मेकअप ऑर्डर स्वीकारल्या जातील.",
-"जेंट्स टेलर्स": "सर्व प्रकारचे शर्ट, पँट, सुट, सफारी, शालेय गणवेश अर्जंट शिवून मिळतील. आपल्याला आवडेल अशा स्टाईल मध्ये आणि योग्य दरात कपडे शिवून मिळतील..<br>एकदा नक्की भेट द्या..",
-"लेडिज टेलर्स": "आमच्याकडे सर्व पॅटर्न मध्ये लेडीज ब्लाऊज तसेच लेडीज ड्रेस शिऊन मिळेल. तसेच पिको फॉल करून देखील मिळेल.",
-"लॉन्ड्री": "आमच्याकडे कपडे इस्त्री करुन मिळतील. सर्व प्रकारचे युनिफॉर्म, शर्ट्स- पँटस्, सुट कोट, सर्व प्रकारच्या साड्या इस्त्री करुन मिळतील.",
-"जिम": "तुम्हाला फिटनेस किंवा बॉडी बिल्डिंगसाठी जिम लावायची आहे का? मग आजच आमच्याशी संपर्क साधा.. <p><b><p></b><b>आमची वैशिष्ट्ये - </b><p> - प्रॉपर वर्कआऊट शेड्युल<p> - अनुभवी, प्रशिक्षित आणि सर्टिफाईड ट्रेनर<p> - वर्कआऊटसाठी अत्याधुनिक मशिन्स व साहित्य उपलब्ध <p> - योग्य आहारविषयक मार्गदर्शन (Diet Chart)<p> - महिलांसाठी खास बॅचेसची सोय उपलब्ध",
-"स्विमींग क्लासेस": "पाण्याची भीती सोडा! पोहणे हे फक्त एक कौशल्य नाही, तर सर्वोत्तम असा व्यायाम प्रकारही आहे. अनुभवी प्रशिक्षकांकडून सोप्या पद्धतीने पोहणे शिका आणि पाण्याशी मैत्री करा.<p>पोहणे शिकायचे आहे? वय काहीही असो! नवशिक्यांपासून ते प्रगत स्तरापर्यंत, आमच्याकडे सर्वांसाठी योग्य वर्ग आहेत. चला, पाण्यातील आनंद अनुभवा!",
-"योगा क्लासेस": "शरीर, मन आणि आत्म्याचा संगम. योगामुळे एकाग्रता, रोगप्रतिकारशक्ती वाढवा आणि सकारात्मक जीवन जगा. योगा क्लासेसमध्ये आपले स्वागत आहे!<p>योगा सर्वांसाठी! लहान मुलांपासून वृद्धांपर्यंत, प्रत्येक वयोगटासाठी विशेष योगा वर्ग.",
-"डान्स क्लासेस": "आवड म्हणून किंवा फिटनेससाठी रेग्युलर डान्स क्लास लावायचा आहे, स्पेशल डान्स बसवून हवा आहे किंवा गॅदरिंगसाठी बेस्ट परफॉर्म करायचय आहे.. तर मग वाट कसली बघताय... आजच आमच्याशी संपर्क साधा...!<br>हिप हॉप, झुंबा फिटनेस, बॉलीवुड, वेस्टर्न, कंटेम्प्रेरी, फॉक स्टाईल, लिरिकल, लॉकिंग पॉपिंग, सालसा वैगेरे सर्व प्रकारचे डान्स शिकवले जातात.<br>डान्स शिकण्यासाठी वयाची अट नाही... मनापासून इच्छा आहे आणि फिटही रहायचय तर आमचा डान्स क्लास जॉईन करा.. लहान मुले आणि लेडीजसाठी स्पेशल बॅचेसची सोय उपलब्ध..",
-      
-"डॉक्टर्स / हॉस्पिटल्स": "<p>आमचे हॉस्पिटल आपल्या कुटुंबाच्या आरोग्यासाठी सर्वोत्तम सेवा प्रदान करते. आमच्याकडे अनुभवी आणि कुशल डॉक्टर आहेत जे आपल्याला सर्व प्रकारच्या आरोग्य समस्यांमध्ये मदत करू शकतात.</p><br><p>आमच्या हॉस्पिटलमध्ये ताप, सर्दी, खोकला, डोकेदुखी, पोटदुखी, अतिसार, उलट्या, मूळव्याध, बद्धकोष्ठता, मुतखडा, कावीळ, टायफॉइड, डेंग्यू, मलेरिया, अंगदुखी, सांधेदुखी, अस्थमा, लठ्ठपणा, उच्च रक्तदाब, मधुमेह अशा अनेक आरोग्य समस्यांवर उपचार केले जातात.</p><br><p>Dr. (Full Name)<p>Qualification - ( M.D. / M.B.B.S. / B.A.M.S. / B.H.M.S. etc)<p>Registration No. (Number)</p>",
-"प्रसूती व स्त्री-रोग तज्ञ": "<p>हॉस्पिटलमध्ये सोनोग्राफी, गरोदरपणातील समस्यांवरील उपचार, नॉर्मल डिलिव्हरी, सिझेरियन डिलिव्हरी अशा सुविधा उपलब्ध आहेत. जोखमीच्या प्रसूतीसाठी हॉस्पिटलमध्ये सुसज्ज असे ऑपरेशन थिएटर आहे.</p><p><br></p><p>तसेच स्त्रियांच्या विविध आजारावरील उपचार, वंध्यत्व उपचार, पिशवीचे ऑपरेशन, कुटुंब नियोजन शस्त्रक्रिया अशा सुविधा देखील हॉस्पिटलमध्ये उपलब्ध आहेत.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - ( M.D., D.G.O., D.A. etc)</p><p>Registration No. (Number)</p>",
-"डोळ्यांचे डॉक्टर": "हॉस्पिटलमध्ये संपूर्ण नेत्रतपासणी व डोळ्यांच्या विविध आजारावरील शस्त्रक्रिया अगदी माफक शुल्कात उपलब्ध आहे.<p><br></p><p><b>उपलब्ध सुविधा -</b></p><ul><li>अत्याधुनिक मशिनद्वारे डोळ्यांची तपासणी</li><li>डोळ्यांच्या सर्व आजारावरील उपचार</li><li>मोतीबिंदू, बुब्बुळावर मांस वाढणे, काचबिंदू, तिरळेपणा उपचार - शस्त्रक्रिया</li><li>अत्याधुनिक फेको मशिनद्वारे बिनटाका मोतिबिंदु ऑपरेशन व भिंगरोपण</li><li>कॉन्टॅक्ट लेन्स क्लिनिक</li><li>लेसर आणि पडद्याचे उपचार</li></ul><p></p><p>नेत्रतज्ज्ञ डॉक्टर - Dr. (Full Name)</p><p>Qualification - ( M.S. etc)</p><p>Registration No. (Number)</p>",
-"बालरोग तज्ञ": "नवजात शिशू व लहान मुलांचा सर्व अत्याधुनिक सुविधायुक्त सुसज्य दवाखाना.<p><br></p><p><b>उपलब्ध सुविधा -</b>-</p><ul><li>नवजात शिशू अतिदक्षता विभाग (NICU)</li><li>पल्स ऑक्सि. मॉनिटर</li><li>रेडियन्ट वार्मर</li><li>आंतररूग्ण विभाग</li><li>बाह्यरूग्ण विभाग</li><li>बालकांचे लसीकरण</li></ul><p><br></p><p>Pediatrician - Dr. (Full Name)</p><p>Qualification - ( M.B.B.S., D.C.H.)</p><p>Registration No. (Number)</p>",
-"कान नाक घसा तज्ञ": "<p>कान, नाक व घशा संबधित सर्व आजारांचे निदान, उपचार आणि शस्त्रक्रियेची सुविधा हॉस्पिटलमध्ये उपलब्ध आहे.</p><p><br></p><p><b>उपलब्द सुविधा -</b></p><p>टॉन्सिलच्या सर्जरी, कानाच्या मायक्रोस्कोपीक सर्जरी, स्वरयंत्राच्या मायक्रोस्कोपीक सर्जरी, एन्डोस्कोपीक सायनस सर्जरी, प्लास्टिक सर्जरी, नाकाच्या हाडाच्या सर्जरी, अन्ननलिकेच्या व श्वसननलिकेच्या एन्डोस्कोपी ऑडियोमेट्री</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - M.S. सर्जन (कान, नाक घसा तज्ञ)</p><p>Registration No. (Number)</p>",
-"डेंटिस्ट": "<p>आमच्या डेंटल क्लिनिकमध्ये दातांच्या आरोग्यासाठी सर्वोत्तम सेवा दिली जाते. दातांच्या विविध समस्यांवरील उपचार क्लिनिकमध्ये उपलब्ध आहेत.</p><p><br></p><p><b>उपलब्ध सुविधा -</b></p><ul><li>वेडेवाकडे दात सरळ करणे</li><li>पुढे आलेले दात सरळ बसविणे</li><li>दात काढणे व अक्कल दाढ काढणे</li><li>चांदी, सिमेंट, लाईट क्युअर कंपोझिट भरणे</li><li>रुट कॅनॉल व पोस्ट अँड कोअर ट्रिटमेंट</li><li>सिंगल सिटींग रूट कॅनॉल ट्रिटमेंट</li><li>फिक्स / काढ- घालावयाचे दात बसविणे</li><li>कवळी करणे, फिक्स कवळी करणे</li><li>लहान मुलांच्या दातावरील उपचार</li><li>डेंटल-सर्जरी</li><li>कॉस्मेटिक दंतोपचार</li></ul><p><br></p><p>Dentist - Dr. (Full Name)</p><p>Qualification - B.D.S.</p><p>Registration No. (Number)</p>",
-"हाडांचे डॉक्टर": "<p>हाडांचे फ्रॅक्चर, स्पोर्ट्स इंज्युरी, खुब्याच्या तक्रारी, गुडघेदुखी, मांड्या दुखणे, कंबर व मणक्याच्या तक्रारी, मानेचे दुखणे, खांदे दुखणे, सांधेदुखी, हाडे ठिसूळ होणे, अस्थिव्यंग, लंगडणे अशा हाडे व सांध्यांच्या समस्यांवर हॉस्पिटलमध्ये उपचार उपलब्ध आहेत.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - M.B.B.S., D.Ortho.</p><p>Registration No. (Number)</p>",
-"त्वचारोग तज्ञ": "<p>त्वचा व केसांच्या विविध समस्यांवरील उपचार आमच्या हॉस्पिटलमध्ये उपलब्ध आहेत.</p><p><br></p><p><b>उपलब्ध सुविधा -</b></p><p>त्वचारोग निदान व उपचार</p><p>गुप्तरोग (व्हेनेरिअल डिसिजीस) निदान, उपचार व सल्ला</p><p>अत्याधुनिक सौंदर्य विषयक उपचार पद्धती</p><p>मुरुमाचे डाग, वांग व काळे डाग इ. वरील केमिकल पिलींग उपचार</p><p>चामखीळ, मस यावरील लेझर उपचार</p><p>नको असलेले केस व गोंदण काढण्यासाठी, चेहऱ्यावरील खड्यांसाठी उपचार</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D./ M.B.B.S. / B.A.M.S. etc)</p><p>Registration No. (Number)</p>",
-"जनरल सर्जन": "<p>आमच्या हॉस्पिटलमध्ये सर्व प्रकारच्या सामान्य शस्त्रक्रिया केल्या जातात. जसे हर्निया, अपेंडिक्स, अल्सर, मुतखडा, पित्ताशयातील खडे, चरबीच्या गाठी अशा जनरल सर्जरीज केल्या जातात. यासाठी अनुभवी व कुशल डॉक्टर उपलब्ध असून हॉस्पिटलमध्ये सुसज्ज असे ऑपरेशन थिएटर आहे.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"हृद्यविकार तज्ञ": "<p>हृदयविकार, हार्ट अटॅक हार्ट फेल्युर, वॉल्व प्रॉब्ल्मेस, Congenital Heart Diseases, Arrhythmias, कार्डिओमायोपॅथी, हाय बीपी, हाय कोलेस्टेरॉल, डायबेटिस अशा विविध आजारांवरील उपचार सुविधा उपलब्ध.</p><p><b><br></b></p><p><b>उपलब्ध सेवा व सुविधा -</b></p><ul><li>कार्डिॲक कन्सल्टेशन</li><li>ECG</li><li>इको कार्डिओग्राफी</li><li>ट्रेड मिल टेस्ट</li><li>ॲम्ब्युलेटरी बीपी मॉनिटरिंग</li><li>अँजिओग्राफी</li><li>अँजिओप्लास्टी</li><li>पेसमेकर इम्प्लांटेशन</li><li>डिव्हाईस क्लोजर</li><li>सुसज्ज आयसीयू</li><li>24×7 इमरजेंसी सुविधा</li></ul><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"डायबिटीस डॉक्टर": "<p>आमच्या हॉस्पिटलमध्ये डायबेटिस वरील उपचार सुविधा उपलब्ध आहेत.</p><p><b><br></b></p><p><b>उपलब्ध सुविधा -</b></p><ul><li>मधुमेह निदान व संपुर्ण उपचार</li><li>मधुमेह दुष्परीणाम उपचार</li><li>मधुमेह आहार, व्यायाम याविषयी सल्ला व मार्गदर्शन</li><li>मधुमेह टाळण्यासाठी प्रतिबंधात्मक उपाय व मार्गदर्शन</li><li>24×7 इमरजेंसी सुविधा</li></ul><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"मेंदुचे डॉक्टर": "<p>मेंदू, मणक्यांचे विकार आणि अपघाती इजा यासाठी न्युरोसर्जन आणि क्रिटीकल केअर फिजिशियन यांच्या देखरेखीखाली अत्याधुनिक उपचार सुविधा आमच्या हॉस्पिटलमध्ये उपलब्ध..</p><p><br></p><p>तसेच मेंदूतील रक्तस्त्राव, पॅरालिसिस, हार्ट अटॅक, सर्पदंश, पॉयझनिंग आणि जी. बी. सिंड्रोम यासाठी सुसज्ज न्युरो-आय.सी.यु. विभाग आमच्या हॉस्पिटलमध्ये आहे.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number</p>",
-"कॅन्सर हॉस्पिटल": "<p>कर्करोगावर अत्याधुनिक उपचार आमच्या हॉस्पिटलमध्ये उपलब्ध आहेत. कॅन्सर संबंधित काही लक्षणे आढळली तर हॉस्पिटलमध्ये या आणि योग्य मार्गदर्शन व उपचारासाठी आमच्या तज्ञ कर्करोग विशेषज्ञ डॉक्टरांना भेटा.</p><p><br></p><p>हॉस्पिटलमध्ये वैद्यकीय ऑन्कोलॉजी आणि सर्जिकल ऑन्कोलॉजी एकाच ठिकाणी उपलब्ध आहे. अधिक माहितीसाठी संपर्क साधा.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"किडनी हॉस्पिटल": "<p>तुम्ही किडनीशी संबंधित आजारांनी त्रस्त आहात का? आजच या आणि आमच्या अनुभवी डॉक्टरांशी संपर्क साधा..</p><p><br></p><p><b>उपलब्ध सुविधा -</b></p><ul><li>किडनीच्या सर्व आजारावरील अत्याधुनिक उपचार उपलब्ध</li><li>डायलिसिस</li><li>किडनी प्रत्यारोपण</li><li>अद्ययावत आय.सी.यू.</li><li>ऑपेरेशन थिएटर</li><li>24 तास अत्यावश्यक सेवा</li></ul><p><br></p><p><b>तुम्हालाही किडनीच्या आजाराने ग्रासले आहे का?</b></p><p>पायांना सूज येणे, चेहऱ्यावर सूज येणे, वारंवार लघवीला होणे, लघवी कमी होणे, ओटीपोटात दुखणे अशी लक्षणे जाणवत असल्यास त्याकडे दुर्लक्ष करू नका. कारण किडनीचा आजार असण्याची शक्यता असू शकते.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"थायरॉईड": "<p>थायरॉईड ग्रंथी योग्यरित्या काम करू शकत नसल्यामुळे थायरॉईड समस्या उद्भवते. थायरॉईडच्या लक्षणांकडे दुर्लक्ष करू नका, वेळीचं निदान करून योग्य ते उपचार घ्या..</p><p><br></p><p>थायरॉईड समस्या, हायपो-थायरॉईडीझम, हायपर-थायरॉईडीझम, गरोदरपणातील थायरॉईड समस्या, गलगंड, थायरॉईड कॅन्सर अशा थॉयरॉईड ग्रंथी संबधित विविध आजरावरील उपचार हॉस्पिटलमध्ये उपलब्ध आहेत.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"मूळव्याध हॉस्पिटल": "<p>आमच्या हॉस्पिटलमध्ये मुळव्याध, फिशर, भगंदर, बद्धकोष्ठता अशा विविध आजारांवर तज्ञ डॉक्टरांकडून उपचार उपलब्ध.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc.)</p><p>Registration No. (Number)</p>",
-"IVF / मुल बाळ न होणे": "<p>तुमच्या मातृत्वाच्या स्वप्नांना आमची साथ..</p><p>लग्नानंतर बरेच दिवस प्रयत्न करूनही, नैसर्गिकरीत्या बाळ होत नसल्यास आजच आमच्या क्लिनिकशी संपर्क साधा.</p><p><br></p><p><b>उपलब्ध सुविधा -</b></p><ul><li>IVF / Test tube baby / वंध्यत्व उपचार</li><li>असंख्य जोडप्यांना अपत्यप्राप्ती देण्यात यश</li><li>अनुभवी व तज्ञ डॉक्टरांकडून मार्गदर्शन व उपचार</li><li>आधुनिक तंत्रज्ञान</li></ul><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. / M.S. etc)</p><p>Registration No. (Number)</p>",
-"लठ्ठपणा उपचार": "<p>आमच्या क्लिनिकमध्ये तज्ञ डॉक्टरांकडून लठ्ठपणावर उपचार केले जातात. त्यासोबत आहार संबधित सल्ला व मार्गदर्शन देखील केले जाते.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - (M.D. M.B.B.S., B.A.M.S.)</p><p>Registration No. (Number)</p>",
-"आयुर्वेद व पंचकर्म": "<p>विविध आजारांवर तज्ञ डॉक्टरांकडून आयुर्वेदिक उपचार उपलब्ध. हॉस्पिटलमध्ये पंचकर्म आणि मुळव्याधवरील क्षारसूत्र चिकित्सा उपलब्ध आहे.</p><p><br></p><p>मुळव्याध, फिशर, भगंदर, बद्धकोष्ठता, मुतखडा, पित्ताशयातील खडे, पित्ताच्या समस्या, शीतपित्त, त्वचेच्या समस्या, मधुमेह, उच्च रक्तदाब, लठ्ठपणा, झोपेच्या तक्रारी, थायरॉईड, संधीवात, आमवात, युरिक ऍसिडचा त्रास, गुडघेदुखी, मायग्रेन, फिट येणे, अस्थमा अशा विविध आजारांवर तज्ञ डॉक्टरांकडून आयुर्वेदिक उपचार उपलब्ध.</p><p><br></p><p>Dr. (Full Name)</p><p>Qualification - M.D. (Ayu.), B.A.M.S.</p><p>Registration No. (Number)</p>",
-"होमिओपॅथी": "<p>दमा, ॲलर्जी, जुनाट सर्दी खोकला, ब्लडप्रेशर, संधिवात, लठ्ठपणा, झोपेच्या तक्रारी, केसांच्या समस्या, पोटाचे आजार, त्वचेचे आजार हाडांचे आजार, वध्यत्व, डोकेदुखी, पिंपल्स, मुळव्याध, मुतखडा अशा विविध आजारांवर प्रभावी होमिओपॅथिक उपचार उपलब्ध.</p><p><br></p><p>Homoeopathic Physician &amp; Consultant</p><p>Dr. (Full Name)</p><p>Qualification - B.H.M.S.</p><p>Registration No. (Number)</p>",
-"निदान लॅब व टेस्ट": "आमच्याकडे अत्याधुनिक मशिनद्वारे रक्त, लघवी यांची तपासणी केली जाते. ब्लड टेस्ट, लघवीच्या चाचण्या, रक्तातील साखर, हिमोग्लोबिन तपासणी, थायरॉईड टेस्ट अशा विविध लॅब तपासण्या माफक दरात करून मिळतील. ",	  
-"सोनोग्राफी / एक्स-रे / MRI स्कॅन": "<p>डायग्नोस्टिक सेंटर : योग्य निदान हीच आमची ओळख..</p><p><br></p><p><b>उपलब्ध सुविधा -</b></p><p>सीटी स्कॅन</p><p>MRI स्कॅन</p><p>सोनोग्राफी</p><p>कलर डॉपलर</p><p>गरोदरपणातील सोनोग्राफी (अनामली स्कॅन, एनटी स्कॅन)</p><p>3D/4D सोनोग्राफी</p><p>गर्भाची इकोकार्डियोग्राफी</p><p>इंटरव्हेशनल रेडिऑलॉजी</p><p>डिजिटल एक्स-रे</p><p>कॉन्ट्रास्ट एक्स-रे</p>",	  
-
-
-"हॉटेल / रेस्टॉरंट - शाकाहारी व मांसाहारी": "फॅमिली रेस्टॉरंट.. व्हेज आणि नॉनव्हेज दोन्ही..!<br>शाकाहारी व मांसाहारी पदार्थांसाठी आमचे रेस्टॉरंट सर्वोत्तम.. मटण ताट, तांबडा व पांढरा रस्सा, मटण / चिकन बिर्याणी, तंदुर डिशेस, अंडाकरी, मच्छी करी, मच्छी फ्राय, पुलाव राईस, व्हेजिटेबल बिर्याणी राईस, सांबार, सोलकढी, रोटी, इडली डोसा, वडापाव, पुरी भाजी अशा चविष्ट डिशेस खास प्रसिद्ध आहेत.",
-"हॉटेल + लॉजिंग, कॉन्फरन्स रूम": "हॉटेलमध्ये रेस्टॉरंट, लॉजिंग सुविधा उपलब्ध असून स्वच्छ व आरामदायी रूम, मोफत वाय-फाय आणि पार्किंगची सोय आहे. याशिवाय कार्यक्रमासाठी कॉन्फरन्स रूम देखील उपलब्ध आहे. आतिथ्याची परंपरा जपत, आम्ही देतो तुम्हाला घरून दूर 'आपल्या' घराची उब. स्वच्छ लॉजिंग, अप्रतिम सेवा.",
-"शुद्ध शाकाहारी फॅमिली रेस्टॉरंट": "जेवण म्हणजे केवळ पोट भरणे नाही, तर तो एक आनंद सोहळा असतो! 'आमच्या फॅमिली रेस्टॉरंटमध्ये या आणि शुद्ध शाकाहारी भोजनाचा अद्भुत अनुभव घ्या.",
-"बेकरी": "आमच्याकडे मिठाई, केक, बिस्कीट, नमकिन बेकरी प्रोडक्ट मिळतील. मिठाईमध्ये पेढे, बर्फी, कुंदा, गुलाब जामुन, जलेबी, बुंदी लाडू असे विविध पदार्थ उपलब्ध.",
-"भेळ वडापाव मिसळ चहा": "स्पेशल चहा, कॉफी, वडापाव, भजी, स्पेशल मिसळ, पुरी भाजी, समोसा, आंबोळी, वडा सांबार व सर्व प्रकारचे थंड पेये मिळतील.",
-"कॅफे / पिझ्झा": "आमच्या कॅफेमध्ये पिझ्झा, बर्गर, फ्रेंच फ्राईज, फ्रँकी, खांडोळी, बिर्याणी, चिकन कबाब, चिकन तंदुरी, ऑमलेट, सँडविच, टोस्ट, आईस्क्रीम, मॅकटेल्स, मिल्कशेक, ओरियो शेक, किटकॅट शेक, कोल्ड कॉफी, हॉट कॉफी, स्पेशल चहा असे विविध प्रकारचे चविष्ट पदार्थ आणि पेये मिळतात. आमच्या कॅफेमध्ये कुटुंबासोबत किंवा मित्रांसोबत चविष्ट पदार्थांचा आस्वाद घेत मस्तपैकी वेळ घालवू शकता. <p> <p>एकवेळ जरूर भेट द्या..",
-"आईस क्रीम / डेअरी प्रॉडक्ट": "आमच्याकडे बटरस्कॉच आईस्क्रीम, व्हॅनिला, कोन आईस्क्रीम, फॅमिलीपॅक आईस्क्रीम, रसबेरी कुल्फी, कुल्फी चोकोबार, मसाला ताक. लस्सी व कोल्ड्रिंक्स मिळेल. ",
-"केक शॉप": "आमच्याकडे पेस्टी केक, चॉकलेट केक, पायनापल, स्ट्राबेरी केक, व्हेज केक, ब्लॅक फॉरेस्ट यासरख्या विविध प्रकारच्या केकच्या ऑडर्स स्विकारल्या जातील. ",
-"चायनीज सेंटर": "व्हेज आणि नॉनव्हेज दोन्ही.. <p> <p>चिकन राईस, चिकन नुडल्स, चिकन ट्रिपल राईस, चिकन लॉलीपॉप, चिकन 65, सर्व प्रकारचे चायनिज सुप, व्हेज राईस, व्हेज नुडल्स, गोबी मंच्युरियन अशा रुचकर व्हेज आणि नॉनव्हेज चायनिज खाद्य पदार्थ खाण्यासाठी फॅमिलीला घेऊन या..",
-"चिकन व अंडी": "आमच्याकडे फ्रेश चिकन व आणि अंडी योग्य दरात मिळतील.",
-"मटण शॉप": "आमच्याकडे बकऱ्याचे ताजे व खात्रीशीर मटण मिळेल. तसेच रक्ती, मुंडी आणि हेल्दी पाया सूप बनवण्यासाठी लागणारे बकऱ्याचे पाय देखील मिळतील. लग्नसमारंभ, वाढदिवस, पार्टी, यात्रा यासाठी लागणाऱ्या मटणाची आर्डर स्वीकारल्या जातील.",
-"फळे व भाजीपाला": "आमच्याकडे दररोज सर्वप्रकारच्या ताजा भाजीपाला किरकोळ व होलसेल योग्य दरात मिळेल.<br>कार्यक्रम व समारंभ साठी लागणारा भाजीपाला ऑर्डरनुसार जागापोच मिळेल.",
-"दळप - कांडप": "धान्य , डाळी दळून दिले जाईल.",
-
-"इंग्लिश स्पीकिंग क्लासेस": "पाचवी ते पदवीधर, गृहिणी ते नोकरदार आणि व्यावसायिक इ. सर्वासाठी उपयुक्त आणि परिपूर्ण असा इंग्लिश स्पीकिंग कोर्स.. इंग्रजी बोलण्याची 100% खात्री..<br><br>आजच संपर्क साधा..",
-"पाचवी ते दहावी क्लासेस": "आमच्याकडे इयत्ता पाचवी ते दहावी मराठी माध्यम, सेमी इंग्लीश, इंग्लीश मिडियमच्या मुलांचे गणित, इंग्लीश आणि सायन्स विषयांचे क्लास घेतले जातात.<br><br>तसेच प्रज्ञाशोध, पाचवी व आठवी स्कॉलरशिप, नवोदय विद्यालय आणि NMMS स्कॉलरशिपचे क्लास घेतले जातात. तरी इच्छुक पालकांनी आपल्या पाल्याच्या प्रवेशासाठी आजच आमच्या सेंटरशी संपर्क करा..",
-"11 वी आणि 12 वी सायन्स NEET/JEE क्लासेस": "आमच्याकडे 11 वी आणि 12 वी सायन्सचे गणित, फिजिक्स, केमेस्ट्री आणि बायोलॉजी विषयांचे क्लास घेतले जातात. तसेच NEET आणि JEE परीक्षेचे क्लास घेतले जातात. प्रवेशासाठी आजच आमच्या सेंटरशी संपर्क करा..",
-"NEET क्लासेस": "डॉक्टर बनण्याचं स्वप्न पाहताय? NEET ची तयारी आता आणखी सोपी! आमच्या NEET क्लासेसमध्ये मिळेल अनुभवी शिक्षकांचे सखोल मार्गदर्शन, उच्च दर्जाचे स्टडी मटेरियल आणि नियमित मॉक टेस्ट  यामुळे तुमचा यशाचा मार्ग सुकर होईल.<br><br>NEET परीक्षा म्हणजे वैद्यकीय प्रवेशाची पहिली पायरी. ही पायरी आत्मविश्वासाने चढण्यासाठी आम्ही आहोत तुमच्यासोबत! आजच संपर्क साधा आणि तुमच्या स्वप्नांना पंख द्या!",
-"JEE क्लासेस": "तुमचं IIT किंवा  इंजिनिअरिंग  चं स्वप्न साकार करा! अनुभवी शिक्षकांच्या मार्गदर्शनाखाली JEE ची तयारी करा आणि यशाचं शिखर गाठा. JEE मेन आणि ॲडव्हान्ससाठी परिपूर्ण तयारी! सखोल अभ्यासक्रम, नियमित सराव परीक्षा आणि वैयक्तिक लक्ष यामुळे तुमचा JEE मधील यशाचा मार्ग निश्चित.<br><br>आताच संपर्क साधा!",
-"कॉमर्स आणि CA/CS क्लासेस": "कॉमर्स व CA/CS चे अवघड विषय आता सोपे झाले! अनुभवी शिक्षकांकडून सखोल ज्ञान आणि परीक्षेची तयारी. यशाची हमी फक्त आमच्या क्लासेसमध्ये. आकरावी व बारावी कॉमर्स, B.com, M.Com, MBA, CA/CS Foundation चे क्लास घेतले जातात.",
-"अबॅकस क्लासेस": "तुमच्या मुलाच्या गणिताची भीती पळवून लावा! अबॅकस क्लासेसमुळे वाढवा एकाग्रता, स्मरणशक्ती आणि वेगाने आकडेमोड करण्याची क्षमता. प्रवेशासाठी आजच आमच्या सेंटरशी संपर्क करा.",
-"MS-CIT कॉम्प्युटर कोर्स अधिकृत संस्था": "MS-CIT म्हणजे तुमच्या प्रगतीचा मार्ग! डिजिटल युगात यशस्वी करिअर घडवण्यासाठी MS-CIT कोर्सला आजच प्रवेश घ्या आणि संगणक कौशल्यांनी परिपूर्ण व्हा.<br><br>आत्ताच संपर्क साधा!",
-"इतर कॉम्प्युटर कोर्स शिकवणारी संस्था": "डिजिटल युगात यशस्वी होण्यासाठी आमच्या केंद्रात शिका बेसिक ते ॲडव्हान्स कॉम्प्युटर कोर्सेस. अनुभवी शिक्षकांकडून नवीनतम सॉफ्टवेअरसोबत कॉम्प्युटर शिक्षण घेऊन करिअरला नवी दिशा द्या!<br><br>आत्ताच संपर्क साधा!",
-"हायस्कूल": "ज्ञान, संस्कार आणि प्रगतीचा संगम!<br>पाचवी ते दहावी मराठी व सेमी इंग्रजी / इंग्रजी माध्यमाची सोय, तज्ञ व अनुभवी शिक्षक वर्ग, महाराष्ट्र राज्य माध्यमिक व उच्चमाध्यमिक परीक्षा मंडळाच्या इयत्ता दहावी परीक्षेत सातत्याने उत्कृष्ट निकाल.<br><br>इयत्ता पाचवी व आठवीमध्ये राज्य शिष्यवृत्ती परीक्षा, एनएमएमएस अशा स्कॉलरशिप परीक्षांची सोय, इयत्ता पाचवी व आठवीच्या स्कॉलरशिप परीक्षेत उत्कृष्ट यश, शालेय विविध क्रीडा स्पर्धेत यशाची परंपरा, खेळाडूंची राज्य व राष्ट्रीय स्तरावर निवड, कॉम्प्युटरची सुसज्ज लॅब शाळेत उपलब्ध.",
-"नर्सरी / प्ले ग्रुप स्कूल": "चिमुकल्यांच्या उज्वल भविष्याची पहिली पायरी! आमच्या प्ले ग्रुपमध्ये खेळातून शिकण्याचा आनंद आणि शाळेत जाण्यापूर्वीची उत्तम तयारी! लहान वयातच अक्षरे, अंक आणि मुलाच्या सुप्त गुणांना वाव देण्यासाठी आजच संपर्क साधा.",
-"ज्युनियर कॉलेज": "अकरावी आणि बारावी आर्ट्स, कॉमर्स आणि सायन्स शिक्षणाची सोय उपलब्ध. तर व्होकेशनल विभागात अकरावी आणि बारावीसाठी मार्केटिंग, बँकिंग आणि इलेक्ट्रिकल शिक्षणाची सोय उपलब्ध.",
-"महाविद्यालय / कॉलेज": "(विद्यापीठाचे नाव)  विद्यापीठ संलग्नित आणि NAAC द्वारे मान्यताप्राप्त महाविद्यालय असून महाविद्यालयात बारावीनंतरचे B.A., B.Com., B.sc., BCA असे पदवी अभ्यासक्रम उपलब्ध तर M.A. M.Com. असे पदव्यु्तर अभ्यासक्रम उपलब्ध आहेत. विद्यापीठ क्रीडा स्पर्धेत यशाची परंपरा. खेळाडूंची राज्य व राष्ट्रीय स्तरावर निवड. NSS व NCC, प्रयोगशाळा व कॉम्प्युटरची सुसज्ज लॅब, सुसज्य ग्रंथालय  महाविद्यालयात उपलब्ध.",
-"इंजिनीअरिंग कॉलेज": "तुमच्या स्वप्नांना पंख देणारे अभियांत्रिकी महाविद्यालय! गुणवत्तापूर्ण शिक्षण आणि उज्ज्वल भविष्याची हमी देणाऱ्या आमच्या कॉलेजमध्ये सिव्हिल, मेकॅनिकल, कॉम्प्युटर, AI & Data Science, E&TC आणि IT हे  इंजिनीअरिंग कोर्सेस उपलब्ध आहेत.<br><br>आजच प्रवेश घ्या आणि यशाची नवी उंची गाठा.",
-"M.B.B.S. मेडिकल कॉलेज": "महाराष्ट्र आरोग्य विज्ञान विद्यापीठ, नाशिक संलग्नित आमच्या कॉलेजमध्ये M.B.B.S. (Bachelor of Medicine, Bachelor of Surgery)अभ्यासक्रम उपलब्ध.  उत्कृष्ट वैद्यकीय शिक्षण आणि उज्ज्वल भविष्याची हमी! अनुभवी प्राध्यापक, मल्टिस्पेशालिटी हॉस्पिटल आणि जागतिक दर्जाच्या सुविधा कॉलेजमध्ये उपलब्ध.<br><br>कोर्स कालावधी - साडेपाच वर्षे (4.5 वर्षे कोर्स व 1 वर्ष इंटरनशिप)<br>पात्रता: 12 वी सायन्स (PCB 50%) आणि NEET",
-"आयुर्वेद मेडिकल कॉलेज": "CCIM, NCISM, आयुष भारत सरकार व महाराष्ट्र आरोग्य विज्ञान विद्यापीठ, नाशिक संलग्नित आमच्या कॉलेजमध्ये B.A.M.S. (Bachelor of Ayurvedic Medicine &amp; Surgery) अभ्यासक्रम उपलब्ध.  सुसज्ज कॅम्पस, अनुभवी प्राध्यापक आणि मल्टिस्पेशालिटी हॉस्पिटलच्या सोयी उपलब्ध आहेत.<br><br>कोर्स कालावधी - साडेपाच वर्षे (4.5 वर्षे कोर्स व 1 वर्ष इंटरनशिप)<br>पात्रता: 12 वी सायन्स (PCB 50%) आणि NEET",
-"होमिओपॅथिक मेडिकल कॉलेज": "CCIM, NCISM, आयुष भारत सरकार व महाराष्ट्र आरोग्य विज्ञान विद्यापीठ, नाशिक संलग्नित आमच्या कॉलेजमध्ये B.H.M.S. (Bachelor of Homoeopathic Medicine and Surgery) अभ्यासक्रम उपलब्ध. सुसज्ज कॅम्पस, अनुभवी प्राध्यापक आणि मल्टिस्पेशालिटी हॉस्पिटलच्या सोयी उपलब्ध आहेत.<br><br>कोर्स कालावधी - साडेपाच वर्षे (4.5 वर्षे कोर्स व 1 वर्ष इंटरनशिप)<br>पात्रता: 12 वी सायन्स (PCB 50%) आणि NEET",
-"डिप्लोमा इंजिनीअरिंग": "कॉलेजमध्ये खालील इंजिनिअरिंग डिप्लोमा कोर्सेस उपलब्ध आहेत. <p> <p><b>इंजिनिअरिंग डिप्लोमा अभ्यासक्रम : </b><p>• मेकॅनिकल इंजिनिअरींग - <p>• इलेक्ट्रीकल इंजिनिअरींग - <p>• सिव्हील इंजिनिअरींग - <p>• इलेक्ट्रॉनिक्स अँड कॉम्प्युटर इंजिनिअरींग - <p>• कॉम्प्युटर इंजिनिअरींग - <p>• मेकॅट्रॉनिक्स इंजिनिअरींग - <p>• डिप्लोमा इन मेडीकल लॅब टेक्नॉलॉजी - <p> <p><b>प्रवेश पात्रता - </b><p>इयत्ता दहावी पास <p> <p><b>थेट द्वितीय वर्ष प्रवेश - </b><p>बारावी विज्ञान पास किंवा आयटीआय उत्तीर्ण <p> <p><b>कॉलेजची वैशिष्ट्ये - </b><p>√ AICTE नवी दिल्ली, DTE मुंबई, महाराष्ट्र शासन मान्यताप्राप्त व महाराष्ट्र राज्य तंत्रशिक्षण मंडळ, मुंबई संलग्न <p>√ राष्ट्रीय व आंतरराष्ट्रीय कंपन्यांसोबत प्लेसमेंट व 100% इंटरन्सशीपकरिता सांमजस्य करार <p>√ मान्यताप्राप्त अनुभवी व उच्च विद्याविभुषीत शिक्षक वृंद <p>√ उद्योजकता विकास मार्गदर्शन केंद्र कडून सक्रीय औद्योजिकता विकास कार्यक्रमाचे आयोजन",
-"फार्मसी कॉलेज": "कॉलेजमध्ये B. Pharmacy आणि D. Pharmacy हे अभ्यासक्रम उपलब्ध आहेत. <p> <p><b>उपलब्ध अभ्यासक्रम : <p>बॅचलर इन फार्मसी (B. Pharmacy) </b><p>कालावधी - 4 वर्षे <p>प्रवेश क्षमता - ** <p>पात्रता - 12 वी सायन्स (PCB / PCM) <p>प्रवेश परीक्षा - NEET / MS-CET <p> <p><b>डिप्लोमा इन फार्मसी (D. Pharmacy) </b><p>कालावधी - 2 वर्षे <p>प्रवेश क्षमता - ** <p>पात्रता - 12 वी सायन्स (PCB / PCM) <p> <p><b>कॉलेजची वैशिष्ट्ये : </b><p>√ PCI New Delhi मान्यताप्राप्त कॉलेज <p>√ DBATU Lonere आणि MSBTE Mumbai संलग्नित <p>√ अनुभवी व तज्ज्ञ शिक्षकवृंद <p>√ 100% निकालाची उज्वल परंपरा <p>√ सुसन्न व सर्व सोयीनियुक्त इमारत <p>√ विद्यार्थ्यांसाठी पुणे, मुंबई, गोवा, बेंगलोर व हैद्राबाद येथील बहुराष्ट्रीय फार्मास्युटिकल इंडस्ट्रीजमध्ये व्हिजीटस् <p>√ अनेक फार्मासुटीक्स कंपनी, ट्रेनिंग इन्स्टिट्यूट कॅम्पस इंटरव्हयूज <p>√ फार्मसी क्षेत्रातील मान्यवर व्यक्तींची विद्यार्थ्यांना मार्गदर्शनपर व्याख्याने व शिबिरे <p>√ विध्यार्थ्यांसाठी कॉलेजची स्वतंत्र बस सुविधा&lt;",
-"करिअर अकॅडमी": "सैन्य, पोलीस, तलाठी भरतीपूर्व प्रशिक्षण आमच्या अकॅडमीत दिले जाते.<p><p><b>अकॅडमीची वैशिष्ट्ये - </b><p>√ आर्मी, पोलीस भरतीपूर्व प्रशिक्षणाचे अद्ययावत केंद्र <p>√ अद्ययावत व्यायाम शाळा<p>√ मुला-मुलींची राहण्याची स्वतंत्र सोय. <p>√ तज्ञ प्रशिक्षक <p>√ सामन्यज्ञान व लेखी परीक्षेची उत्तम तयारी<p>√ ग्रामसेवक, तलाठी, पशुधन पर्यवेक्षक स्वतंत्र बॅच चालू <p>√ इंग्रजीचे स्वतंत्र मार्गदर्शन",
-"नर्सिंग / पॅरामेडीकल": "नर्सिंग हा एक महत्त्वपूर्ण आणि सन्माननीय असा व्यवसाय आहे. नर्स ही रुग्णांची काळजी घेतात तसेच डॉक्टरांना त्यांच्या कामात मदत करतात. नर्सिंग हा एक गरजेचा व्यवसाय असून नर्सची हेल्थकेअर सेक्टरमध्ये नेहमीच मागणी असते. <p> <p>जर तुम्हाला नर्स बनण्याची इच्छा असेल, तर आमच्या नर्सिंग कॉलेजमध्ये प्रवेश घ्या. आमच्याकडे अनुभवी आणि कुशल शिक्षक आहेत जे तुम्हाला नर्सिंगचे सर्व ज्ञान देतील. आमच्या कॉलेजमध्ये अद्ययावत लॅब आणि सुविधा आहेत जे तुम्हाला नर्सिंगचे व्यावहारिक ज्ञान देतील. <p> <p>कॉलेजमध्ये उपलब्ध असणारे विविध कोर्सेस व त्यासंबंधित माहिती खाली दिलेली आहे. <p> <p><b>कोर्सचे नाव - ए.एन.एम. </b><p>प्रवेश क्षमता - ** <p>कोर्स कालावधी - 2 वर्षे <p>शैक्षणिक पात्रता - 12 वी पास (फक्त स्त्री उमेदवार) <p>वय मर्यादा - 17 ते 34 वय <p> <p><b>कोर्सचे नाव - जी.एन.एम. </b><p>प्रवेश क्षमता - ** <p>कोर्स कालावधी - 3 वर्षे <p>शैक्षणिक पात्रता - 12 वी पास (किमान 40%) सायन्स प्राधान्य <p>वय मर्यादा - 17 ते 34 वय <p> <p><b>कोर्सचे नाव - पी.बी.बी.एस्सी (नर्सिंग पदवी) </b><p>प्रवेश क्षमता - ** <p>कोर्स कालावधी - 2 वर्षे <p>शैक्षणिक पात्रता - जी.एन.एम. (नोंदणीकृत) प्राधान्य <p> <p><b>कोर्सचे नाव - बेसीक बी.एस्सी. (नर्सिंग पदवी) </b><p>प्रवेश क्षमता - ** <p>कोर्स कालावधी - 4 वर्षे <p>शैक्षणिक पात्रता - 12 वी सायन्स पास (MHCET आवश्यक) <p>वय मर्यादा - 17 ते 34 वय",
-"हॉटेल मॅनेजमेंट": "व्यवसाय शिक्षणातून भविष्य घडविण्याची संधी... <p>हॉटेल मॅनेजमेंट संबधित विविध कोर्सेस संस्थेत उपलब्ध आहेत. <p> <p><b>उपलब्ध कोर्सेस - </b><p>हॉटेल मॅनेजमेंट अॅण्ड केटरिंग टेक्नॉलॉजी <p>(कालावधी 1 वर्ष) <p> <p>केटरिंग अॅण्ड रेस्टॉरंट मॅनेजमेंट <p>(कालावधी 2 वर्ष ) <p> <p>हॉटेल मॅनेजमेंट अॅण्ड केटरिंग सायन्स <p>(कालावधी - 3 वर्ष) <p> <p><b>आमची वैशिष्ट्ये : </b><p>- महाराष्ट्र शासन मानता प्राप्त <p>- तज्ञ व अनुभवी शिक्षक वर्ग <p>- प्रशस्त इमारत <p>- हॉस्टेलची सोय <p>- 100% नोकरीची संधी <p>- असंख्य विद्यार्थ्यांना नामांकित कंम्पन्यांमध्ये नोकरी दिली <p>- बऱ्याच विद्यार्थ्यांनी स्वतःचा व्यवसाय सुरू केला",
-"ITI / टेक्निकल कोर्सेस": "इलेक्ट्रिकल, टर्नर, फिटर, वेल्डर, डिझेल इंजिन मेकॅनिक, CNC/VMC असे विविध टेक्निकल कोर्सेस आमच्या संस्थेमध्ये उपलब्ध आहेत. <p> <p><b>आमची वैशिष्ट्ये : </b><p>√ महाराष्ट्र शासन मानता प्राप्त <p>√ तज्ञ व अनुभवी शिक्षक वर्ग <p>√ प्रशस्त इमारत <p>√ हॉस्टेलची सोय <p>√ 100% नोकरीची संधी <p>√ असंख्य विद्यार्थ्यांना नामांकित कंम्पन्यांमध्ये नोकरी दिली <p>√ बऱ्याच विद्यार्थ्यांनी स्वतःचा व्यवसाय सुरू केला",
-"BCA / MCA": "<p>बॅचलर ऑफ कॉम्प्युटर ॲप्लिकेशन (BCA) हा एक तीन वर्षांचा अंडरग्रेजुएट पदवी अभ्यासक्रम आहे जो संगणक विज्ञान आणि तंत्रज्ञानाच्या क्षेत्रात विद्यार्थ्यांना प्रशिक्षण देतो. हा अभ्यासक्रम संगणक हार्डवेअर, सॉफ्टवेअर, नेटवर्किंग, प्रोग्रामिंग, डेटाबेस, वेब विकास इत्यादी विषयांचा समावेश करतो. BCA पदवीधरांना संगणक क्षेत्रातील विविध पदांवर नोकरी मिळू शकते, जसे की सॉफ्टवेअर डेव्हलपर, सिस्टम अॅडमिनिस्ट्रेटर, नेटवर्क इंजिनिअर, वेब डेव्हलपर, QA इंजिनिअर, डेटाबेस मॅनेजर इत्यादी.</p><p><br></p><p><b>आवश्यक पात्रता -</b></p><p>BCA अभ्यासक्रमासाठी बारावी किंवा समकक्ष परीक्षा उत्तीर्ण असणे आवश्यक आहे.</p><p><br></p><p>मास्टर ऑफ कॉम्प्युटर ॲप्लिकेशन (MCA) हा संगणक विज्ञान आणि तंत्रज्ञानाच्या क्षेत्रात पदव्युत्तर पदवी अभ्यासक्रम आहे. हा अभ्यासक्रम विद्यार्थ्यांना संगणक प्रणाली, प्रोग्रामिंग भाषा, डेटाबेस, नेटवर्किंग आणि इतर संबंधित विषयांचे ज्ञान प्रदान करतो. MCA अभ्यासक्रम पूर्ण केल्यानंतर विद्यार्थ्यांना संगणक क्षेत्रातील विविध पदांवर नोकरी मिळू शकते.</p>",
-"BBA / MBA": "तुमचे भविष्य तुमच्या हातात आहे. MBA साठी प्रवेश घेऊन उज्वल, स्मार्ट आणि अधिक यशस्वी उद्याच्या दिशेने पाऊल टाका..",
-"B.Ed कॉलेज": "**** विद्यापीठ संलग्नित आणि NCTE मान्यताप्राप्त कॉलेज <p> <p><b>उपलब्ध कोर्सेस - </b><p>B.Ed. (Bachelor of Education) <p>कालावधी - 2 वर्ष <p>प्रवेश परीक्षा - MHT B.Ed. CET<p> <p><p>B.Ed. म्हणजे Bachelor of Education. हा दोन वर्षांचा पदवी अभ्यासक्रम आहे जो शिक्षक बनण्यासाठी आवश्यक आहे. या अभ्यासक्रमात शिक्षणशास्त्र, बाल विकास, शिक्षण पद्धती, मूल्यमापन इत्यादी विषयांचा अभ्यास शिकवला जातो. B.Ed. अभ्यासक्रम पूर्ण केल्यानंतर शिक्षक बनण्यासाठी आवश्यक पात्रता प्राप्त होते. <p> <p>B.Ed. अभ्यासक्रम हा एक उत्तम करिअर पर्याय आहे. शिक्षक हे देशाचे आधारस्तंभ आहेत. शिक्षक समाजाला शिक्षित करून देशाच्या विकासात महत्त्वपूर्ण योगदान देतात. जर तुम्हाला शिक्षक बनण्याची इच्छा असेल तर B.Ed. अभ्यासक्रम हा एक उत्तम पर्याय आहे.",
-"लॉ कॉलेज": "संलग्नित विद्यापीठ - **** विद्यापीठ <p> <p><b>उपलब्ध कोर्सेस - <p>L.L.B. (Bachelor of Law) </b><p>कालावधी - 3 वर्ष पदवी कोर्स <p>प्रवेश परीक्षा - MHT-CET-LAW <p> <p><b>B.L.S., L.L.B. </b><p>(Bachelor of Legal Science + Bachelor of Law) <p>कालावधी - 5 वर्ष पदवी कोर्स <p>प्रवेश परीक्षा - MHT-CET-LAW <p> <p><b>B.A., L.L.B.</b><p>(Bachelor of Arts + Bachelor of Law) <p>कालावधी - 5 वर्ष पदवी कोर्स <p>प्रवेश परीक्षा - MHT-CET-LAW",
-"कृषी महाविद्यालय": "Course - B.Sc. (Hons) Agriculture<br>Intake Capacity - **",
-
-"राष्ट्रीय बँका": "IFSC Code - (Code) <p> <p><b>कार्यालयीन वेळ - </b><p>सोमवार ते शनिवार: 10 AM to 1:30 PM आणि 2:50 PM to 4 PM <p>दुसरा आणि चौथा शनिवार कामकाज बंद राहील. <p>रविवारी बँक बंद राहील. ",
-"सहकारी बँका": "IFSC Code - (Code) <p> <p>आमची बँक तुमच्यासाठी सर्वोत्तम बँकिंग सेवा प्रदान करते. आम्ही तुम्हाला विविध प्रकारचे कर्ज आणि गुंतवणूक पर्याय देखील ऑफर करतो. <p> <p>आकर्षक ठेव योजना आणि ठेवीवरील विमा संरक्षण सुविधा उपलब्ध आहे. तसेच ठेवींवर आकर्षक व्याजदर व विविध कर्जयोजना आमच्याकडे आहेत. होम लोन, वाहन कर्ज, बिझनेस लोन, पर्सनल लोन, लोन अगेनस्ट प्रॉपर्टी, एज्युकेशन लोन, गोल्ड लोन अशा लोन सुविधा आकर्षक व्याजदरात उपलब्ध आहेत. <p> <p>अधिक माहितीसाठी संपर्क साधा. ",
-"पतसंस्था": "आमच्या पतसंस्थेमध्ये आकर्षक ठेव योजना, विमा संरक्षण तथा कर्ज सुविधा उपलब्ध आहेत. अधिक माहितीसाठी आजच आमच्या शाखेमध्ये संपर्क करा. <p> <p><b>उपलब्ध सुविधा - </b><p>आकर्षक ठेव योजना <p>विविध सुलभ कर्ज योजना <p>होम लोन / गोल्ड लोन / वाहन कर्ज अत्यंत कमी व्याजदरात उपलब्ध <p> <p>अधिक माहितीसाठी आमच्या शाखेला संपर्क करा.",
-
-
-"इंजिनिअर्स / कंत्राटदार": "बिल्डिंग प्लॅन डिझाईनर, कन्स्ट्रक्शन कॉन्ट्रॅक्टर अँड डेव्हलपर <p> <p><p>घर बांधताय..? बांधकामाची चिंता कशाला, आम्ही आहोतच आपल्या सेवेत.. प्लॅनपासुनच आमची जबाबदारी... त्यामुळे बांधकाम, आर्किटेक्चर अशा कोणत्याही बांधकाम कामासाठी आमच्याशी संपर्क साधा. <p> <p><b>उपलब्ध सेवा - </b><p>कन्स्ट्रक्शन, रिनोवेशन, सिव्हील कॉट्रॅक्टींग अँड कन्सल्टीं, स्ट्रक्चरल डिझाईन, 3D इलेव्हेशन, 2D / 3D बिल्डिंग प्लॅन, इंटेरिअर डिझाईन, व्हॅल्युएशन ॲन्ड इस्टीमेंट, प्लॉटींग लेआऊट आणि सुपर्व्हिजन अशा बांधकाम संबधित सर्व्हिसेस आम्ही ऑफर करतो.<p><p><b>संपर्क -</b><p>इंजिनिअर (पूर्ण नाव)<p>बी.ई सिव्हिलबिल्डिंग प्लॅन डिझाईनर, कन्स्ट्रक्शन कॉन्ट्रॅक्टर अँड डेव्हलपर",
-"जागा / घर खरेदी": "तुमच्या स्वप्नातील घर, तुमच्या बजेटमध्ये... <p> <p>**** येथील गृह प्रकल्पात आपल्या घराचे स्वप्न पूर्ण करा. ** लाखा पासून 1BHK /2BHK फ्लॅट्स उपलब्ध.. ",
-"बांधकाम साहित्य दुकाने": "आमच्याकडे बांधकामासाठी लागणारे सर्व प्रकारचे साहित्य जसे चिरा, वाळू, सिमेंट, सळी, विटा, फरशी, खडी, चौकटी, दरवाजे, पत्रे इत्यादी बांधकाम साहित्य होलसेल व रिटेल दरात मिळेल.",
-"बांधकाम कामगार": "आम्ही घरे आणि इमारतीच्या बांधकामाचे गवंडी काम / सेन्ट्रीग काम करतो. आमच्याकडे यासाठीची कुशल आणि अनुभवी टीम आहे. आणि ते आपल्या कामाची वेळेवर आणि उत्तम प्रकारे पूर्ण करतील. <p> <p>तुमच्या घराचे बांधकाम उत्तम दर्जाचे, वेळेत आणि बजेटमध्ये पूर्ण करायचे असल्यास आताच आम्हाला कॉल करा.",
-"वेल्डिंगची कामे": "आमच्याकडे फॅब्रिकेशनची सर्व कामे जसे की स्टील रेलिंग, लोंखडी ग्रील, दरवाजे, खिडकी, जिना, रेलिंग शटर, महाराजा गेट, फॅक्टरी शेड इत्यादी करून मिळतील.",
-"टाईल्स फरशीची दुकाने": "टाईल्स व ग्रेनाईट मिळेल .. <p> <p>आमच्याकडे कोटा, काडापा, तंदूर, ग्रेनाईट, मार्बल, मार्बोनेट, इलेवेशन टाईल्स, परसोलीम पारटॅक्स, पार्कींग टाईल्स आणि मार्बोनेट फरशी किरकोळ व होलसेल दरात मिळेल.",
-"फरशीची कामे": "सर्व प्रकारची फरशी योग्य दरात बसवून देऊ. ",
-"किचन ट्रॉली": "आमच्याकडे किचन ट्रॅाली संबंधीत सर्व प्रकारची दर्जेदार कामे करून मिळतील. आमच्याकडे किचन ट्रॅाली, स्टेनलेस स्टील रेलींग, डायनिंग टेबल सेट, एस.एस.वर्क्स इ. विविध कामे केली जातात.",
-"अल्युमीनियम व ग्लास वर्क्स": "आमच्याकडे सर्व प्रकारचे ॲल्युमिनियम मटेरियल होलसेल दरात मिळेल. ॲल्युमिनियम स्लाइडिंग विंडो, पार्टिशन, दरवाजे यासाठी लागणारे नामवंत कंपन्याचे ॲल्युमिनियम मटेरियल व हार्डवेअर साहित्य उपलब्ध. <p><p>याशिवाय ॲल्युमिनियम व एम.एस. मटेरियल पावडर कोटींग करुन मिळेल.<p> <p><p>आमचेकडे जिंदाल व नॉन जिंदाल ॲल्युमिनियम स्लाइडिंग विंडो, पार्टिशन स्ट्रक्चरची कामे करून मिळतील. तसेच घरगुती व ऑफीस फर्निचर ऑर्डरप्रमाणे तयार करून मिळेल.",
-"सुतार": "आमच्याकडे तयार लाकडी चौकटी, दरवाजे, खिडक्या विविध डिझाईनमध्ये मिळतील. तसेच ऑर्डर प्रमाणे चौकटी, दरवाजे व फर्निचर बनवून दिले जाईल. ",
-"प्लंबर": "आमच्याकडे प्लंबिंग आणि Sanitary ची सर्व कामे करून मिळतील. नळ फिटिंग, वॉश बेशीन, गिजर, वॉल मिक्सर, सोलार वॉटर फिटिंग, मोटार पंप फिटिंग करुन मिळेल.",
-"वायरमन / इलेकट्रीशियनची कामे": "सर्व प्रकारची लाईट फिटींग आणि वायरींगची कामे केली जातील. पट्टी फिटींग, कन्सिल्ड वायरिंग, पीओपी, इंड्स्ट्रीअल थ्री फेज अशा विविध प्रकारच्या वायरींगची  कामे योग्य दरात केली जातील. ",
-"पेंटर": "आम्ही अनेक वर्षांपासून घरे आणि इमारती रंगवण्याचे काम करत आहोत. आमच्याकडे यासाठीची कुशल आणि अनुभवी टीम आहे. आणि ते आपल्या कामाची वेळेवर आणि उत्तम प्रकारे पूर्ण करतील. <p> <p>तुमच्या घराचे रंगकाम उत्तम दर्जाचे, वेळेत आणि बजेटमध्ये पूर्ण करायचे असल्यास आताच आम्हाला कॉल करा.",
-
-	  
-"मारुती सुझुकी कार शोरूम": "प्रत्येक कुटुंबाची पहिली पसंती, मारुती सुझुकी. विश्वसनीय कामगिरी, उत्तम मायलेज आणि उत्कृष्ट विक्रीपश्चात सेवा. तुमच्या कुटुंबासाठी निवडा सर्वोत्तम!<br><br>आमच्या कार शोरूममध्ये मारुती सुझुकी कंपनीच्या सर्व कार मॉडेल्स उपलब्ध आहेत. तुम्ही तुमच्या आवडीची कार बुक करू शकता. त्यामुळे जर तुम्ही नवीन कार खरेदी करण्याचा विचार करत असाल, तर आमच्या मारुती सुझुकी शोरूममध्ये या.. तुम्हाला तुमच्या बजेटमध्ये परफेक्ट कार उपलब्ध करून देऊ.<br><br>आम्ही कार विक्रीसोबतच सर्व्हिस देखील देतो, त्यामुळे तुमच्या कारची सर्व देखभाल एकाच ठिकाणी करून घेऊ शकता.<br><br>तुमच्या स्वप्नातील कार शोधण्यासाठी आजच आमच्या शोरूमला भेट द्या!",
-"टाटा मोटर्स कार शोरूम": "आमच्या कार शोरूममध्ये टाटा कंपनीच्या सर्व कार मॉडेल्स उपलब्ध आहेत. तुम्ही तुमच्या आवडीची कार बुक करू शकता. त्यामुळे जर तुम्ही नवीन कार खरेदी करण्याचा विचार करत असाल, तर आमच्या टाटा मोटर्स कार शोरुममध्ये या.. तुम्हाला तुमच्या बजेटमध्ये परफेक्ट कार उपलब्ध करून देऊ.",
-"Hyundai कार शोरुम": "आमच्या कार शोरूममध्ये ह्युंदाई कंपनीच्या सर्व कार मॉडेल्स उपलब्ध आहेत. तुम्ही तुमच्या आवडीची कार बुक करू शकता. त्यामुळे जर तुम्ही नवीन कार खरेदी करण्याचा विचार करत असाल, तर आमच्या युनिक ह्युंदाई शोरुममध्ये या.. तुम्हाला तुमच्या बजेटमध्ये परफेक्ट कार उपलब्ध करून देऊ.",
-"महिंद्रा कार शोरुम": "आमच्या कार शोरूममध्ये महिंद्रा कंपनीच्या सर्व कार मॉडेल्स उपलब्ध आहेत. तुम्ही तुमच्या आवडीची कार बुक करू शकता. त्यामुळे जर तुम्ही नवीन कार खरेदी करण्याचा विचार करत असाल, तर आमच्या महिंद्रा शोरूममध्ये या.. तुम्हाला तुमच्या बजेटमध्ये परफेक्ट कार उपलब्ध करून देऊ.",
-"रेनॉल्ट कार शोरुम": "आमच्या कार शोरूममध्ये रेनॉल्ट कंपनीच्या सर्व कार मॉडेल्स उपलब्ध आहेत. तुम्ही तुमच्या आवडीची कार बुक करू शकता. त्यामुळे जर तुम्ही नवीन कार खरेदी करण्याचा विचार करत असाल, तर आमच्या रेनॉल्ट शोरूममध्ये या.. तुम्हाला तुमच्या बजेटमध्ये परफेक्ट कार उपलब्ध करून देऊ.",
-"हिरो मोटोकॉर्प बाइक शोरुम": "आम्ही हिरो कंपनीचे अधिकृत वितरक असून हिरो कंपनीच्या सर्व टू व्हीलर, मोपेड बाईक आमच्या शोरूममध्ये उपलब्ध आहेत. विक्रीबरोबरच टू व्हीलर बाईकचे सर्व्हिस सेंटर देखील उपलब्ध आहे. <p> <p>कमीत कमी डाउनपेमेंट, एका तासात डिलिव्हरी, त्वरित बाईकसाठी कर्ज मंजुरी आणि कुशल व अनुभवी मेकॅनीकची टीम अशा सर्व वैशिष्ट्यांनी परिपूर्ण असेलेलं शोरूम. <p> <p>तुमची आवडती ड्रीम बाईक आजच खरेदी करा..",
-"सुझुकी ॲटोमोबाईल शोरुम": "आपल्या आवडत्या SUZUKI बाइक्स आता येथेच खरेदी करा कारण आमच्या शोरुममध्ये उपलब्ध आहेत सर्व मॉडेल्स आणि तेही सर्व आकर्षक रंगांमध्ये.. <p> <p>आमच्याकडे सर्व सुझुकी टू व्हीलर हजर स्टॉक मध्ये उपलब्ध आहेत. आकर्षक लोन ऑफर्स, कमी व्याज दर व डाउनपेमेंट, कुशल व अनुभवी असा मेकॅनीक स्टाफ, अत्याधुनिक वर्कशॉप आणि आपलेपणाची सर्व्हिस ही आणखी काही आमची वैशिष्ट्ये सांगता येतील.",
-"TVS ॲटोमोबाईल शोरुम": "नवीनतम TVS मॉडेल्सचा दमदार अनुभव घेण्यासाठी आजच आमच्या शोरूमला भेट द्या! तंत्रज्ञान आणि स्टाईलचे उत्तम मिश्रण.",
-"होंडा टू व्हीलर बाइक शोरुम": "बाईक घ्यायचा विचार करताय? तर वाट कशाची बघताय..? आजच खरेदी करा आपली आवडती होंडा बाईक तेही आपल्या होंडाच्या शोरूम मध्ये ! <p> <p>- त्वरित गाडी पासिंग करून डिलीव्हरी <p>- 15%आधिक मायलेज <p>- कमीत कमी कागदपत्रे <p>- आकर्षक बॅक लोन <p>- विनम्र व तत्पर सेवा <p> <p>होंडा Shine, Unicorn, Activa अशा लोकप्रिय बाइक आजच बुक करा.",
-"सोनालिका ट्रॅक्टर": "आमच्या शोरुममध्ये अत्याधुनिक सोनालिका ट्रॅक्टर्स उपलब्ध असतात. सोनालिका ट्रॅक्टर हे शेती आणि इतर व्यवसायांसाठी योग्य आहेत. सोनालिका ट्रॅक्टर्सची उच्च दर्जाचे इंजिन, अत्याधुनिक तंत्रज्ञान आणि मजबूत बांधणी अशी वैशिष्ट्ये असतात. उत्तम किंमत आणि त्याचबरोबर ट्रॅक्टर खरेदीवर खास ऑफर देखील आम्ही देत असतो. <p> <p>आजच आमच्या शोरुमला भेट द्या आणि तुमचा नवीन सोनालिका ट्रॅक्टर खरेदी करा!",
-"स्वराज ट्रॅक्टर शोरुम": "आमच्या शोरुममध्ये स्वराजचे अत्याधुनिक आणि उत्तम ट्रॅक्टर्स उपलब्ध असतात. आमच्याकडे स्वराज ट्रॅक्टर्स आहेत जे तुमच्या शेती आणि इतर व्यवसायांसाठी योग्य आहेत. स्वराज ट्रॅक्टर्सची उच्च दर्जाचे इंजिन, अत्याधुनिक तंत्रज्ञान आणि मजबूत बांधणी अशी वैशिष्ट्ये असतात. आम्ही आमच्या ट्रॅक्टर्सवर उत्तम किंमत आणि ऑफर देखील देत असतो. <p> <p>ताकद है, भरोसा हे, स्वराज है। <p>आजच आमच्या शोरुमला भेट द्या आणि तुमचा नवीन स्वराज ट्रॅक्टर खरेदी करा!",
-"महिंद्रा ट्रॅक्टर शोरुम": "आमच्या महिंद्रा ट्रॅक्टर शोरूममध्ये तुम्हाला सर्व नवीन ट्रॅक्टर्स मॉडेल्स उपलब्ध असतात. आमच्याकडे विविध HP चे ट्रॅक्टर्स आहेत जे तुमच्या शेती आणि इतर व्यवसायांसाठी योग्य आहेत. महिंद्रा ट्रॅक्टर्समध्ये उच्च दर्जाचे इंजिन, सोयीस्कर वैशिष्ट्ये आणि मजबूत बांधणी असते. <p> <p>आजच आमच्या शोरुमला भेट द्या आणि तुमचा नवीन महिंद्रा ट्रॅक्टर खरेदी करा!",
-"टाटा मोटर्स ट्रक, tampo": "टाटा मोटर्सचे ट्रक, छोटा हाथी, टाटा ACE आणि इतर कमर्शियल व्हेईकल उपलब्ध.. <p> <p>आम्ही  टाटा मोटर्सचे कमर्शियल व्हेईकल अधिकृत डीलर असून, आमच्या शोरुममध्ये टाटा ट्रक, टाटा ACE Gold, टाटा Intra V30, मिनी व्हॅन, बस, स्कूल बस, आणि इतर कमर्शियल व्हेईकल उपलब्ध असतात. <p> <p>आजच आमच्या शोरुमला भेट द्या .. ",
-"सायकल मार्ट": "आमच्या सायकल मार्टमध्ये सर्व प्रकारच्या सायकल्स मिळतील. मुलांसाठी, तरुणांसाठी उपयुक्त अशा सायकली आमच्याकडे उपलब्ध आहेत. ज्यामध्ये रोडर, हाइब्रिड सायकल, क्रॉस कन्ट्री आणि बीएमएक्स सायकल्स समाविष्ट आहेत. <p> <p>आम्ही सर्व प्रकारच्या सायकल्स आणि रंगांमध्ये सायकल्स ऑफर करतो, जेणेकरून तुम्ही तुमच्या गरजेनुसार सायकल खरेदी करू शकता. जर तुम्हाला नवीन सायकल घ्यायची आल्यास, आमच्या स्टार सायकल मार्टला भेट द्या. आम्ही तुमच्या बजेटमध्ये परवडणारी, तुमच्या गरजेनुसार आणि तुमच्या आवडीनुसार सायकल उपलब्ध करून देऊ. <p> <p>तसेच सर्व प्रकारच्या सायकलांची दुरुस्ती सेवा व स्पेअर पार्ट देखील आमच्याकडे उपलब्ध. <p> <p>आजच आमच्या सायकल मार्टला भेट द्या!",
-"पेट्रोल पंप": "चांगली सेवा, विनम्र व तत्पर कर्मचारी, सुरक्षितता आणि स्वच्छता.हीच आमची ओळख ..<br>तर मग आवश्य भेट द्या..",
-"टू व्हीलर": "आमच्याकडे टू व्हीलर गाड्यांचे सर्व्हिसिंग केले जाते. अत्याधुनिक वर्कशॉप, कुशल व अनुभवी असा आमचा मेकॅनीक स्टाफ असून सर्व प्रकारच्या टू व्हीलरचे स्पेअर पार्टस आमच्याकडे उपलब्ध असतात.",
-"फोर व्हीलर": "आमच्याकडे मारुती, टाटा, ह्युंदाई अशा फोर व्हीलर गाड्यांचे सर्व प्रकारचे ओरिजनल स्पेअर पार्टस योग्य सेवेसह उपलब्ध. आमच्याकडे अत्याधुनिक मशनरींसह भव्य वर्कशॉप असून तज्ञ व अनुभवी मेकॅनीकल्सची टीम सेवेत सज्ज असते. तसेच टू-व्हीलर, फोर-व्हीलर वॉशिंगची सुविधा उपलब्ध आहे.<p><p>एकदा नक्की भेट द्या.",
-"ट्रॅव्हल्स बस": "मुंबई-विरार-कल्याण-डोंबिवली-ठाणे-पनवेल-पुणे येथे येण्या-जाण्यासाठी ट्रॅव्हल बस सेवा आमच्यामार्फत दिली जाते . ",
-"रिक्षा": "मी एक अनुभवी आणि विश्वासार्ह रिक्षा चालक आहे. मला शहरामधील सर्व रस्ते माहित आहेत आणि मी तुम्हाला वेळेवर आणि सुरक्षितपणे माझ्या रिक्षाने पोहोचवू शकतो.",
-"कार भाड्याने मिळेल": "आमच्याकडे कार भाड्याने मिळेल. आमच्याकडे पुणे, मुंबई येथे जाण्यासाठी किंवा कौटुंबिक सहल, धार्मिक स्थळांची सहल यासाठी गाडी भाड्याने मिळेल. <p> <p>.. तर हवीय का कार भाड्याने..? आजच संपर्क करा.",
-"ट्रॅक्टर / JCB भाड्याने मिळेल": "विविध कामांसाठी ट्रॅक्टर व ट्रॉली / जेसीबी भाड्याने मिळेल.",
-"मालवहातूक": "आमच्याकडे माल वाहतुकीसाठी ट्रक, डंपर, ट्रॅक्टर भाड्याने मिळेल. ",
-"बॅटरीज, टायर्स, स्पेयर पार्ट्स": "सर्व वाहनांचे स्पेअर पार्ट, टायर, इंजन ऑइल आमच्याकडे उपलब्ध.",
-"ड्रायव्हिंग स्कूल": "फोर व्हिलर व टु व्हिलर वाहन चालविण्यास शिका आमच्या मोटार ड्रायव्हिंग स्कूल सोबत.. <p> <p><b>आमची वैशिष्टे - </b><p>• अनुभवी शिक्षकांकडून वाहन चालविण्याचे प्रशिक्षण <p>• हायवे तसेच गर्दीच्या ठिकाणी गाडी चालवण्याचे ट्रेनिंग, <p>• नाईट ड्रायव्हिंगचे ट्रेनिंग, चढण आणि उतरण ट्रेनिंग, रिव्हर्स आणि पार्किंग ट्रेनिंग <p>• वाहतुकीचे नियम, चिन्हे, आणि खुणा याबद्दलचे शिक्षण <p>• पुरुष व महिला स्वतंत्र बॅच <p>• आपल्या सोयीनुसार बॅच घेतली जाईल ",	  
-
-"ईलेक्ट्रॉनिक वस्तूंची दुरुस्ती": "आमच्याकडे फॅन, मिक्सर, इस्त्री, गिझर, कूलर, फ्रीज, टीव्ही, ओव्हन, इलेक्ट्रिक शेगडी,  इलेक्ट्रिक फिल्टर, गिझर,  मोटर पंप आदी सर्व प्रकारच्या इलेक्ट्रिक उपकरणांची दुरुस्ती सेवा उपलब्ध आहे. ",
-"मोबाईल दुरुस्ती": "आमच्याकडे मोबाईल, स्मार्टफोन रिपेअरिंगची सुविधा उपलब्ध आहे. ",
-"कॉम्पुटर दुरुस्ती": "आमच्याकडे कॉम्प्यूटर, लॅपटॉप, प्रिंटर्स, स्कॅनर यांची दुरुस्ती सेवा उपलब्ध.",
-
-"नर्सरी रोपवाटिका": "आमच्याकडे सर्व प्रकारचे रोपे योग्य दरात मिळतील. गुलाब, निशिगंधा, जास्वंद, मनी प्लांट, इतर शोभिवंत झाडे, आयुर्वेदिक वनस्पती तसेच आंबा, काजू, पेरू, चिकू, सिताफळ, नारळ, लिंबू, डाळींब, जांभूळ वैगेरे फळझाडांची रोपे मिळतील.",
-"खते, बियाणे दुकाने": "आमच्याकडे नामवंत कंपनीचे बि-बियाणे, शेती उपयोगी सर्व साहित्य, कीटकनाशक व तणनाशक औषधे योग्य दरात मिळतील. <p><p>प्रोप्रा. (पूर्ण नाव) B. Sc. Agri",
-"शेती अवजारे व यंत्रे": "आमच्याकडे कृषी यंत्रे, उपकरणे व शेती अवजारे मिळतील.",
-"पशुखाद्य / जनावरांची औषध दुकाने": "आमच्याकडे सर्व प्रकार पाळीव प्राण्यांचे व पक्ष्यांचे  मेडिकल  मिळेल व तसेच  पोल्ट्री मेडिकल  मिळेल,  व कुक्कुटपालनासाठी  योग्य  मार्गदर्शन मिळेल. ",
-"पोल्ट्री / डेअरी फार्मिंग": "पोल्ट्री / डेअरी फार्मिंग",
-"अर्थमुव्हर्स - बोअरवेल्स": "आमचेकडे पाईप लाईन, विहीर खुदाईची तसेच कोणतेही खुदाई कामे करून मिळतील तसेच ट्रॅक्टर योग्य दरात भाड्याने मिळेल.",
-"पशुवैद्यकीय डॉक्टर": "आमच्याकडे एक अनुभवी आणि समर्पित पशुवैद्यकीय टीम आहे जी तुमच्या पाळीव प्राण्यांना सर्वोत्तम उपचार प्रदान करण्यासाठी वचनबद्ध आहे. आमचे पेट क्लिनिक 24×7 उपलब्ध आहे जेणेकरून तुमच्या पाळीव प्राण्यांना जेव्हा आवश्यक असेल तेव्हा त्यांना आवश्यक काळजी मिळू शकेल.<p><p><b>उपलब्ध सुविधा -</b><p>- पाळीव प्राण्यांची सामान्य आरोग्य तपासणी आणि त्यानुसार उपचार<p>- पाळीव प्राण्यांच्या शस्त्रक्रिया<p>- पाळीव प्राण्यांचे लसीकरण<p>- पाळीव प्राण्यांची जंतनाशक गोळ्या व औषधे उपलब्ध<p>- गोचीड निर्मूलन<p>- पाळीव प्राण्यांचे पोषक खाद्य उपलब्ध<p><p>आमच्याबद्दल अधिक जाणून घेण्यासाठी किंवा अपॉइंटमेंट बुक करण्यासाठी आजच आम्हाला कॉल करा."
-    };
+<h2>Enquiry Form</h2>
+  <form id="whatsappForm">
+    <div class="form-group">
+      <label for="name">Your Name</label>
+      <input type="text" id="name" required>
+    </div>
+    <div class="form-group">
+      <label for="number">Your Mobile Number</label>
+      <input type="text" id="number" required>
+    </div>
+    <div class="form-group">
+      <label for="message">Message</label>
+      <textarea id="message" rows="4" required></textarea>
+    </div>
+    <button type="submit">Submit Message</button>
+  </form>
+    </div>
 	
 	
-
-function updateCategory2() {
-  const mainCat = document.getElementById("category1").value;
-  const category2 = document.getElementById("category2");
-  category2.innerHTML = '<option value="">Select Subcategory</option>';
-  document.getElementById("subSubContainer").style.display = "none";
-
-  if (mainCat && categories[mainCat]) {
-    Object.keys(categories[mainCat]).forEach(subcat => {
-      const option = document.createElement("option");
-      option.value = subcat;
-      option.innerText = subcat;
-      category2.appendChild(option);
-    });
-  }
-  clearBusinessInfo();
-}
+	
+	<div class="card vertical">
+    <div class="dropdown">
+        <select id="festivalSelect" onchange="updateFestivalBanner()">
+          <option value="" disabled selected>फेस्टिवल शुभेच्छा बॅनर निवडा</option>
+            <option value="NewYear|https://festival.bizc.in/1Jan/NewYear.jpg|#f7ac3b|नवीन वर्षाच्या हार्दिक शुभेच्छा|शुभेच्छुक">नवीन वर्ष</option>
+<option value="SavitribaiPhuleJayanti|https://festival.bizc.in/1Jan/SavitribaiPhuleJayanti.jpg|#f7da20|सावित्रीबाई फुले जयंतीच्या हार्दिक शुभेच्छा|शुभेच्छुक">सावित्रीबाई फुले जयंती - 3 जानेवारी</option>
+<option value="RajmataJijauJayanti|https://festival.bizc.in/1Jan/RajmataJijauJayanti.jpg|#f7da20|राजमाता जिजाऊ जयंतीच्या शुभेच्छा|शुभेच्छुक">राजमाता जिजाऊ जयंती</option>
+<option value="SwamiVivekanandJayanti|https://festival.bizc.in/1Jan/SwamiVivekanandJayanti.jpg|#f7da20|स्वामी विवेकानंद जयंतीच्या शुभेच्छा|शुभेच्छुक">स्वामी विवेकानंद जयंती - 12 जानेवारी</option>
+<option value="Lohri|https://festival.bizc.in/1Jan/Lohri.jpg|#f7ac3b|लोहरी सणाच्या हार्दिक शुभेच्छा|शुभेच्छुक">लोहरी सण</option>
+<option value="MakarSankranti|https://festival.bizc.in/1Jan/MakarSankranti.jpg|#f7da20|मकर संक्रांतीच्या हार्दिक शुभेच्छा|शुभेच्छुक">मकर संक्रांती</option>
+<option value="IndianArmyDay|https://festival.bizc.in/1Jan/IndianArmyDay.jpg|#f7da20|भारतीय सेना दिनाच्या हार्दिक शुभेच्छा|जय हिंद">भारतीय सेना दिन - 15 जानेवारी</option>
+<option value="BalikaDin|https://festival.bizc.in/1Jan/BalikaDin.jpg|#f7da20|राष्ट्रीय बालिका दिनाच्या हार्दिक शुभेच्छा|बेटी बचाओ, बेटी पढ़ाओ">राष्ट्रीय बालिका दिन - 24 जानेवारी</option>
+<option value="RepublicDay|https://festival.bizc.in/1Jan/RepublicDay.jpg|#f7da20|प्रजासत्ताक दिनाच्या हार्दिक शुभेच्छा|जय हिंद">प्रजासत्ताक दिन - 26 जानेवारी</option>
 
 
-function updateCategory3() {
-  const mainCat = document.getElementById("category1").value;
-  const subCat = document.getElementById("category2").value;
-  const category3 = document.getElementById("category3");
-  const subSubContainer = document.getElementById("subSubContainer");
 
-  category3.innerHTML = '<option value="">Select Sub-Subcategory</option>';
-  subSubContainer.style.display = "none";
 
-  if (mainCat && subCat) {
-    const subSubList = categories[mainCat][subCat];
-    if (subSubList && Array.isArray(subSubList)) {
-      
-      subSubList.forEach(subSub => {
-        const option = document.createElement("option");
-        option.value = subSub;
-        option.innerText = subSub;
-        category3.appendChild(option);
+<option value="VasantPanchami|https://festival.bizc.in/2Feb/VasantPanchami.jpg|#f7ac3b|वसंत पंचमीच्या शुभेच्छा|शुभेच्छुक">वसंत पंचमी</option>
+<option value="WorldCancerDay|https://festival.bizc.in/2Feb/WorldCancerDay.jpg|#f7da20|जागतिक कॅन्सर दिवसानिमित्त जनजागृती करूया|आरोग्य हीच खरी संपत्ती">जागतिक कॅन्सर दिवस - 4 फेब्रुवारी</option>
+<option value="SantRavidasJayanti|https://festival.bizc.in/2Feb/SantRavidasJayanti.jpg|#f7da20|संत रविदास महाराज जयंतीच्या शुभेच्छा|शुभेच्छुक">संत रविदास महाराज जयंती</option>
+<option value="SantSewalalJayanti|https://festival.bizc.in/2Feb/SantSewalalJayanti.jpg|#f7da20|संत सेवालाल महाराज जयंतीच्या शुभेच्छा|शुभेच्छुक">संत सेवालाल महाराज जयंती - 15 फेब्रुवारी</option>
+<option value="ShivJayanti|https://festival.bizc.in/2Feb/ShivJayanti.jpg|#f7ac3b|शिवजयंतीच्या हार्दिक शुभेच्छा|शुभेच्छुक">शिवजयंती</option>
+<option value="MarathiBhashaDiwas|https://festival.bizc.in/2Feb/MarathiBhashaDiwas.jpg|#f7da20|मराठी भाषा दिवसाच्या शुभेच्छा|शुभेच्छुक">मराठी भाषा दिवस - 27 फेब्रुवारी</option>
+<option value="ScienceDay|https://festival.bizc.in/2Feb/ScienceDay.jpg|#f7da20|राष्ट्रीय विज्ञान दिनाच्या शुभेच्छा|विज्ञानाचा स्वीकार करूया">राष्ट्रीय विज्ञान दिवस - 28 फेब्रुवारी</option>
+<option value="Ramzan|https://festival.bizc.in/2Feb/Ramzan.jpg|#88ebb4|रमजानच्या पवित्र महिन्याच्या शुभेच्छा|ईद मुबारक">रमजान</option>
+
+
+
+<option value="GajananMaharajPrakatDin|https://festival.bizc.in/3Mar/GajananMaharajPrakatDin.jpg|#f7ac3b|गजानन महाराज प्रकट दिनाच्या शुभेच्छा|गण गण गणात बोते">गजानन महाराज प्रकट दिन</option>
+<option value="Mahashivratri|https://festival.bizc.in/3Mar/Mahashivratri.jpg|#f7ac3b|महाशिवरात्रीच्या शुभेच्छा|शुभेच्छुक">महाशिवरात्री</option>
+<option value="WomensDay|https://festival.bizc.in/3Mar/WomensDay.jpg|#f7da20|महिला दिनाच्या हार्दिक शुभेच्छा|शुभेच्छुक">महिला दिन - 8 मार्च</option>
+<option value="Holi|https://festival.bizc.in/3Mar/Holi.jpg|#f7ac3b|होळी पौर्णिमेच्या रंगतदार शुभेच्छा|शुभेच्छुक">होळी</option>
+<option value="RangPanchami|https://festival.bizc.in/3Mar/RangPanchami.jpg|#f7ac3b|रंगपंचमीच्या रंगीत शुभेच्छा|शुभेच्छुक">रंगपंचमी</option>
+<option value="ChatrapatiSambhajiMaharajPunyatithi|https://festival.bizc.in/3Mar/ChatrapatiSambhajiMaharajPunyatithi.jpg|#f7ac3b|छत्रपती संभाजी महाराज पुण्यतिथीनिमित्त विनम्र अभिवादन|जय भवानी जय शिवाजी">छत्रपती संभाजी महाराज पुण्यतिथी - 11 मार्च</option>
+<option value="ConsumerDay|https://festival.bizc.in/3Mar/ConsumerDay.jpg|#f7da20|जागतिक ग्राहक दिनाच्या शुभेच्छा|सजग ग्राहक, सक्षम राष्ट्र">जागतिक ग्राहक दिन - 15 मार्च</option>
+<option value="WaterDay|https://festival.bizc.in/3Mar/WaterDay.jpg|#f7da20|जागतिक पाणी दिनाच्या शुभेच्छा|पाणी वाचवा, जीवन वाचवा">जागतिक पाणी दिवस - 22 मार्च</option>
+<option value="EidMubarak|https://festival.bizc.in/3Mar/EidMubarak.jpg|#88ebb4|ईद मुबारक|शुभेच्छुक">ईद मुबारक</option>
+
+
+
+
+<option value="GudiPadwa|https://festival.bizc.in/4Apr/GudiPadwa.jpg|#f7ac3b|गुढीपाडव्याच्या हार्दिक शुभेच्छा|शुभेच्छुक">गुढीपाडवा</option>
+<option value="HealthDay|https://festival.bizc.in/4Apr/HealthDay.jpg|#f7da20|आरोग्य दिनाच्या शुभेच्छा|शुभेच्छुक">आरोग्य दिन - 7 एप्रिल</option>
+<option value="PhuleJayanti|https://festival.bizc.in/4Apr/PhuleJayanti.jpg|#f7da20|महात्मा फुले जयंतीच्या शुभेच्छा|शुभेच्छुक">महात्मा फुले जयंती - 11 एप्रिल</option>
+<option value="AmbedkarJayanti|https://festival.bizc.in/4Apr/AmbedkarJayanti.jpg|#bfbeed|डॉ. बाबासाहेब आंबेडकर जयंतीच्या शुभेच्छा|जय भीम">डॉ. बाबासाहेब आंबेडकर जयंती - 14 एप्रिल</option>
+<option value="RamNavami|https://festival.bizc.in/4Apr/RamNavami.jpg|#f7ac3b|रामनवमीच्या हार्दिक शुभेच्छा|शुभेच्छुक">रामनवमी</option>
+<option value="MahavirJayanti|https://festival.bizc.in/4Apr/MahavirJayanti.jpg|#f7da20|महावीर जयंतीच्या शुभेच्छा|शुभेच्छुक">महावीर जयंती</option>
+<option value="HanumanJayanti|https://festival.bizc.in/4Apr/HanumanJayanti.jpg|#f7ac3b|हनुमान जयंतीच्या शुभेच्छा|शुभेच्छुक">हनुमान जयंती</option>
+<option value="GoodFriday|https://festival.bizc.in/4Apr/GoodFriday.jpg|#f7da20|गुड फ्रायडेच्या प्रार्थनायुक्त शुभेच्छा|शुभेच्छुक">गुड फ्रायडे</option>
+<option value="EasterSunday|https://festival.bizc.in/4Apr/EasterSunday.jpg|#f7da20|ईस्टर संडेच्या शुभेच्छा|शुभेच्छुक">ईस्टर संडे</option>
+<option value="AkkalkotSwamiJayanti|https://festival.bizc.in/4Apr/AkkalkotSwamiJayanti.jpg|#f7ac3b|अक्कलकोट स्वामी समर्थ प्रकट दिनाच्या शुभेच्छा|शुभेच्छुक">अक्कलकोट स्वामी समर्थ प्रकट दिन</option>
+<option value="BasaveshwarJayanti|https://festival.bizc.in/4Apr/BasaveshwarJayanti.jpg|#f7da20|महात्मा बसवेश्वर जयंतीच्या शुभेच्छा|शुभेच्छुक">महात्मा बसवेश्वर जयंती</option>
+<option value="EarthDay|https://festival.bizc.in/4Apr/EarthDay.jpg|#f7da20|पृथ्वी दिनाच्या शुभेच्छा|पृथ्वी वाचवा, निसर्ग वाचवा">पृथ्वी दिन - 22 एप्रिल</option>
+<option value="AkshayaTritiya|https://festival.bizc.in/4Apr/AkshayaTritiya.jpg|#f7ac3b|अक्षय्य तृतीयाच्या शुभेच्छा|शुभ समृद्धी लाभो">अक्षय्य तृतीया</option>
+
+
+
+
+<option value="MaharashtraDay|https://festival.bizc.in/5May/MaharashtraDay.jpg|#f7da20|महाराष्ट्र दिन व कामगार दिनाच्या शुभेच्छा|शुभेच्छुक">महाराष्ट्र दिन- 1 मे </option>
+<option value="MothersDay|https://festival.bizc.in/5May/MothersDay.jpg|#f7da20|मदर्स डेच्या हार्दिक शुभेच्छा|शुभेच्छुक">मदर्स डे</option>
+<option value="BuddhaPurnima|https://festival.bizc.in/5May/BuddhaPurnima.jpg|#bfbeed|बुद्ध पौर्णिमेच्या शुभेच्छा|शुभेच्छुक">बुद्ध पौर्णिमा</option>
+<option value="AhilyabaiHolkarJayanti|https://festival.bizc.in/5May/AhilyabaiHolkarJayanti.jpg|#f7da20|पुण्यश्लोक अहिल्यादेवी होळकर जयंतीच्या शुभेच्छा|शुभेच्छुक">अहिल्यादेवी होळकर जयंती - 31 मे</option>
+
+
+
+
+<option value="FathersDay|https://festival.bizc.in/6Jun/FathersDay.jpg|#f7da20|फादर्स डेच्या हार्दिक शुभेच्छा|शुभेच्छुक">फादर्स डे</option>
+<option value="YogaDay|https://festival.bizc.in/6Jun/YogaDay.jpg|#f7da20|योगा दिनाच्या शुभेच्छा|शुभेच्छुक">योगा दिन - 21 जून</option>
+<option value="BakriEid|https://festival.bizc.in/6Jun/BakriEid.jpg|#88ebb4|बकरी ईदच्या शुभेच्छा|ईद मुबारक">बकरी ईद</option>
+<option value="ShahuMaharajJayanti|https://festival.bizc.in/6Jun/ShahuMaharajJayanti.jpg|#f7da20|राजर्षी शाहू महाराज जयंतीच्या शुभेच्छा|शुभेच्छुक">शाहू महाराज जयंती - 26 जून</option>
+<option value="VatPurnima|https://festival.bizc.in/6Jun/VatPurnima.jpg|#f7da20|वटपौर्णिमेच्या मंगलमय शुभेच्छा|शुभेच्छुक">वट पौर्णिमा</option>
+
+
+<option value="DoctorsDay|https://festival.bizc.in/7Jul/DoctorsDay.jpg|#f7da20|डॉक्टर्स डेच्या शुभेच्छा|शुभेच्छुक">डॉक्टर्स डे - 1 जुलै</option>
+<option value="KrushiDin|https://festival.bizc.in/7Jul/KrushiDin.jpg|#f7da20|महाराष्ट्र कृषी दिनाच्या शुभेच्छा|शुभेच्छुक">महाराष्ट्र कृषी दिन - 1 जुलै</option>
+<option value="AshadhiEkadashi|https://festival.bizc.in/7Jul/AshadhiEkadashi.jpg|#f7ac3b|आषाढी एकादशीच्या हार्दिक शुभेच्छा|शुभेच्छुक">आषाढी एकादशी</option>
+<option value="GuruPournima|https://festival.bizc.in/7Jul/GuruPournima.jpg|#f7ac3b|गुरू पौर्णिमेच्या शुभेच्छा|शुभेच्छुक">गुरू पौर्णिमा</option>
+<option value="KargilVijayDiwas|https://festival.bizc.in/7Jul/KargilVijayDiwas.jpg|#f7da20|कारगिल विजय दिवसाच्या शुभेच्छा|शुभेच्छुक">कारगिल विजय दिवस - 26 जुलै</option>
+
+<option value="FriendshipDay|https://festival.bizc.in/8Aug/FriendshipDay.jpg|#f7da20|फ्रेंडशीप डेच्या शुभेच्छा|शुभेच्छुक">फ्रेंडशीप डे</option>
+<option value="IndependenceDay|https://festival.bizc.in/8Aug/IndependenceDay.jpg|#f7da20|स्वातंत्र्य दिनाच्या शुभेच्छा|शुभेच्छुक">स्वातंत्र्य दिन - 15 ऑगस्ट</option>
+<option value="RakshaBandhan|https://festival.bizc.in/8Aug/RakshaBandhan.jpg|#f7ac3b|रक्षाबंधनाच्या शुभेच्छा|शुभेच्छुक">रक्षाबंधन</option>
+<option value="Janmashtami|https://festival.bizc.in/8Aug/Janmashtami.jpg|#f7ac3b|जन्माष्टमीच्या शुभेच्छा|शुभेच्छुक">जन्माष्टमी</option>
+
+
+<option value="TeachersDay|https://festival.bizc.in/9Sep/TeachersDay.jpg|#f7da20|शिक्षक दिनाच्या शुभेच्छा|शुभेच्छुक">शिक्षक दिन - 5 सप्टेंबर</option>
+<option value="GaneshChaturthi|https://festival.bizc.in/9Sep/GaneshChaturthi.jpg|#f7ac3b|गणेश चतुर्थीच्या शुभेच्छा|शुभेच्छुक">गणेश चतुर्थी</option>
+<option value="EngineersDay|https://festival.bizc.in/9Sep/EngineersDay.jpg|#f7da20|इंजिनीअर्स डेच्या शुभेच्छा|शुभेच्छुक">इंजिनीअर्स डे - 15 सप्टेंबर</option>
+<option value="AnantChaturdashi|https://festival.bizc.in/9Sep/AnantChaturdashi.jpg|#f7ac3b|अनंत चतुर्दशीच्या शुभेच्छा|गणपती बाप्पा मोरया, पुढच्या वर्षी लवकर या!">अनंत चतुर्दशी</option>
+<option value="EidEMilad|https://festival.bizc.in/9Sep/EidEMilad.jpg|#88ebb4|ईद ए मिलादच्या शुभेच्छा|शुभेच्छुक">ईद ए मिलाद</option>
+
+
+
+
+<option value="GandhiJayanti|https://festival.bizc.in/10Oct/GandhiJayanti.jpg|#f7da20|महात्मा गांधी जयंतीच्या शुभेच्छा|शुभेच्छुक">महात्मा गांधी जयंती - 2 ऑक्टोबर</option>
+<option value="AirForceDay|https://festival.bizc.in/10Oct/AirForceDay.jpg|#f7da20|भारतीय वायुसेना दिवसाच्या शुभेच्छा|शुभेच्छुक">भारतीय वायु सेना दिवस - 8 ऑक्टोबर</option>
+<option value="Navratri|https://festival.bizc.in/10Oct/Navratri.jpg|#f7ac3b|नवरात्रीच्या मंगलमय शुभेच्छा|नऊ दिवस भक्ती आणि शक्तीचे">घटस्थापना व नवरात्री</option>
+<option value="Dussehra|https://festival.bizc.in/10Oct/Dussehra.jpg|#f7ac3b|विजयादशमीच्या हार्दिक शुभेच्छा|शुभेच्छुक">विजयादशमी दसरा</option>
+<option value="KojagiriPournima|https://festival.bizc.in/10Oct/KojagiriPournima.jpg|#f7ac3b|कोजागिरी पौर्णिमेच्या शुभेच्छा|शुभेच्छुक">कोजागिरी पौर्णिमा</option>
+
+
+<option value="BhauBeej|https://festival.bizc.in/11Nov/BhauBeej.jpg|#f7ac3b|भाऊबीजच्या हार्दिक शुभेच्छा|शुभेच्छुक">भाऊबीज</option>
+<option value="Dhantrayodashi|https://festival.bizc.in/11Nov/Dhantrayodashi.jpg|#f7ac3b|धनत्रयोदशीच्या शुभेच्छा|शुभेच्छुक">धनत्रयोदशी</option>
+<option value="Diwali|https://festival.bizc.in/11Nov/Diwali.jpg|#f7ac3b|दीपावलीच्या हार्दिक शुभेच्छा|शुभेच्छुक">दीपावली</option>
+<option value="ChildrensDay|https://festival.bizc.in/11Nov/ChildrensDay.jpg|#f7da20|बालदिनाच्या शुभेच्छा|शुभेच्छुक">बालदिन - 14 नोव्हेंबर</option>
+<option value="GuruNanakJayanti|https://festival.bizc.in/11Nov/GuruNanakJayanti.jpg|#f7ac3b|गुरू नानक जयंतीच्या शुभेच्छा|शुभेच्छुक">गुरू नानक जयंती</option>
+<option value="KartikEkadashi|https://festival.bizc.in/11Nov/KartikEkadashi.jpg|#f7ac3b|कार्तिकी एकादशीच्या शुभेच्छा|शुभेच्छुक">कार्तिकी एकादशी</option>
+<option value="ConstitutionDay|https://festival.bizc.in/11Nov/ConstitutionDay.jpg|#f7da20|संविधान दिनाच्या शुभेच्छा|शुभेच्छुक">संविधान दिन - 26 नोव्हेंबर</option>
+
+
+
+<option value="DivyangDiwas|https://festival.bizc.in/12Dec/DivyangDiwas.jpg|#f7da20|दिव्यांग दिनाच्या शुभेच्छा|शुभेच्छुक">दिव्यांग दिवस - 3 डिसेंबर</option>
+<option value="IndianNavyDay|https://festival.bizc.in/12Dec/IndianNavyDay.jpg|#f7da20|इंडियन नेव्ही डेच्या शुभेच्छा|शुभेच्छुक">इंडियन नेव्ही डे - 4 डिसेंबर</option>
+<option value="MahaparinirvanDin|https://festival.bizc.in/12Dec/MahaparinirvanDin.jpg|#bfbeed|डॉ. बाबासाहेब आंबेडकर महापरिनिर्वाण दिनानिमित्त|विनम्र अभिवादन">डॉ. बाबासाहेब आंबेडकर महापरिनिर्वाण दिन - 6 डिसेंबर</option>
+<option value="DattaPournima|https://festival.bizc.in/12Dec/DattaPournima.jpg|#f7ac3b|दत्त जयंतीच्या शुभेच्छा|शुभेच्छुक">दत्त पौर्णिमा</option>
+<option value="Christmas|https://festival.bizc.in/12Dec/Christmas.jpg|#f7da20|ख्रिसमसच्या हार्दिक शुभेच्छा|शुभेच्छुक">ख्रिसमस - 25 डिसेंबर</option>
+<option value="YearEnd|https://festival.bizc.in/12Dec/YearEnd.jpg|#f7da20|31 डिसेंबरच्या शुभेच्छा|शुभेच्छुक">31 डिसेंबर</option>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        </select>
+    </div>
+
+        <div id="festivalBanner" class="festival-banner">
+            <img id="festivalImage" src="" alt="Festival Image" oncontextmenu="return false;">
+            <div class="festival-details">
+			<h3 id="messageLine1"></h3>
+            <strong id="messageLine2"></strong>
+                <h2>Health Marathi Support</h2>
+                <h3>Satish Upalkar</h3>
+                <strong>Address : 907, Ravalnath Colony, Ajara</strong><br>
+                <strong class="non-clickable"><i class="fas fa-phone icon"></i>  7498663848</strong>
+            </div>
+        </div>
+
+        <div class="button-container">
+            <button id="saveBanner" class="buttonFB" onclick="saveBannerAsPng()"> Save Banner</button>
+            <button id="shareBanner" class="buttonFB share-button" style="display: none;" onclick="shareBanner()"><i class="fab fa-whatsapp icon"></i> Share Banner</button>
+        </div>
+    </div>
+
+    <script>
+    
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll('.photo-card').forEach(function (card) {
+        const img = card.querySelector('img');
+        if (!img || !img.src || img.src.trim() === "") return; 
+
+        img.onload = function () {
+          card.classList.add("show");
+        };
+        img.onerror = function () {
+          card.classList.remove("show");
+        };
+
+        
+        if (img.complete && img.naturalWidth > 0) {
+          card.classList.add("show");
+        }
       });
-      subSubContainer.style.display = "block";
-      clearBusinessInfo();
-    } else {
-      
-      autoFillBusinessInfo(subCat);
-    }
-  }
-}
-
-
-function autoFillBusinessInfo(value) {
-  clearBusinessInfo();
-  let selected = value || document.getElementById("category3").value;
-  if (selected && businessInfoTemplates[selected]) {
-    quill.root.innerHTML = businessInfoTemplates[selected];
-    document.getElementById("businessDescription").value = businessInfoTemplates[selected];
-  }
-}
-
-
-function clearBusinessInfo() {
-  quill.root.innerHTML = "";
-  document.getElementById("businessDescription").value = "";
-}
-
-
-var quill = new Quill('#businessInfoEditor', {
-  theme: 'snow',
-  modules: {
-    toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered'}, { 'list': 'bullet' }], ['link']]
-  }
-});
-
-
-quill.on('text-change', function() {
-  document.getElementById("businessDescription").value = quill.root.innerHTML.trim();
-});
-
-
-
-document.addEventListener("DOMContentLoaded", function () {
-  document.getElementById("socialMediaContainer").style.display = "none"; 
-  document.getElementById("toggleIcon").innerHTML = "+"; 
-});
-
-
-function toggleSocialMedia() {
-  let container = document.getElementById("socialMediaContainer");
-  let toggleIcon = document.getElementById("toggleIcon");
-
-  if (container.style.display === "none" || container.style.display === "") {
-    container.style.display = "block";
-    toggleIcon.innerHTML = "−"; 
-  } else {
-    container.style.display = "none";
-    toggleIcon.innerHTML = "+"; 
-  }
-}
-
-
-
-        
-        document.getElementById("addBusinessHomepage").addEventListener("click", function() {
-        document.getElementById("Homepage").style.display = "none";
-        document.getElementById("businessForm").style.display = "block";
-		document.getElementById("HeadingSubmit").style.display = "block";
-		document.getElementById("submitBtn").style.display = "block";
     });
-		
-        
-        document.getElementById("addNewBusinessButton").addEventListener("click", function() {
-        document.getElementById("NewStatus").style.display = "none";
-        document.getElementById("businessForm").style.display = "block";
-		document.getElementById("HeadingSubmit").style.display = "block";
-		document.getElementById("submitBtn").style.display = "block";
-		document.getElementById('BusinessEngNameLabel').style.display = 'block';
-		document.getElementById('businessNameEnglish').style.display = 'block';
-    });
-	
-	
-        
-	document.getElementById("updateBusinessHomepage").addEventListener("click", function() {
-        document.getElementById("Homepage").style.display = "none"; 
-        document.getElementById("SearchData").style.display = "block";
-    });
-	
-	
-	
-    document.getElementById("allEntryRecordsHomepage").addEventListener("click", function() {
-        window.open("https://murgud.bizc.in/", "_blank");
-    });
-
-    
   </script>
   
   <script>
-  const mobileInput   = document.getElementById("mobileNumber");
-  const whatsappInput = document.getElementById("whatsappNumber");
-  const sameCheckbox  = document.getElementById("sameAsMobile");
+  document.addEventListener("DOMContentLoaded", function () {
+    
+    const ts = new Date().getTime();
+    const rawUrl = "https:\/\/murgud.bizc.in\/assets\/images\/HealthMarathiSupportp1.webp"; 
+    const imageUrl = rawUrl + (rawUrl.includes("?") ? "&" : "?") + "ts=" + ts;
 
-  sameCheckbox.addEventListener("change", function () {
-    if (this.checked) {
-      whatsappInput.value = mobileInput.value;  
-      whatsappInput.readOnly = false;            
-    } else {
-      whatsappInput.readOnly = false;           
-      whatsappInput.value = "";                 
-    }
+    const div = document.getElementById("businessPhoto1");
+    const img = new Image();
+
+    img.onload = function () {
+      div.style.backgroundImage = `url('${imageUrl}')`;
+      div.classList.add("show"); 
+    };
+    img.onerror = function () {
+      div.style.backgroundImage = "none";
+      div.classList.remove("show");
+      div.style.border = "none"; 
+    };
+
+    img.src = imageUrl;
   });
+</script>
+
+
+
+<script>
+    
+    let videos = [
+        "",
+        "",
+        "",
+        "",
+        "",
+    ];
+
+    function getYouTubeEmbedCode(url) {
+        if (!url) return "";
+
+        let videoId = "";
+
+        
+        if (url.includes("watch?v=")) {
+            videoId = url.split("watch?v=")[1].split("&")[0];
+        }
+        
+        else if (url.includes("youtu.be/")) {
+            videoId = url.split("youtu.be/")[1].split("?")[0];
+        }
+
+        
+        if (!videoId || videoId.trim() === "") return "";
+
+        return `<iframe width="100%" height="315" 
+                    src="https://www.youtube.com/embed/${videoId}" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+                </iframe>`;
+    }
+
+    // Loop through each possible video
+    videos.forEach((videoUrl, index) => {
+        let cardId = `ytVideoCard${index+1}`;
+        let containerId = `ytVideoContainer${index+1}`;
+
+        let embedCode = getYouTubeEmbedCode(videoUrl);
+
+        if (embedCode !== "") {
+            document.getElementById(containerId).innerHTML = embedCode;
+            document.getElementById(cardId).style.display = "block";
+        } else {
+            
+            document.getElementById(cardId).style.display = "none";
+        }
+    });
+</script>
+
+
+<script>
+document.getElementById("whatsappForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const name    = document.getElementById("name").value.trim();
+  const number  = document.getElementById("number").value.trim();
+  const message = document.getElementById("message").value.trim();
+
+  if (!name || !number || !message) {
+    alert("Please fill out all fields.");
+    return;
+  }
 
   
-  mobileInput.addEventListener("input", function () {
-    if (sameCheckbox.checked) {
-      whatsappInput.value = mobileInput.value;
+  const whatsappNumber = "917498663848";
+
+  
+  const text = "*New Enquiry*\n\n"
+             + "*Name:* " + name + "\n"
+             + "*Contact Number:* " + number + "\n"
+             + "*Message:* " + message;
+
+  
+  const url = "https://wa.me/" + whatsappNumber + "?text=" + encodeURIComponent(text);
+
+  
+  window.open(url, "_blank");
+});
+</script>
+
+
+
+
+<script>
+const websiteLink          = "";
+const emailID              = "";
+const businessNameEnglish  = "Health Marathi Support";
+const phoneNumber          = ""; 
+
+
+document.title = businessNameEnglish + " - Business Details";
+
+
+let contactHtml = "";
+
+
+if (websiteLink) {
+  contactHtml += `
+    <a href="${websiteLink}" class="WE-icon" target="_blank">
+      <i class="fas fa-globe"></i> Web
+    </a>
+  `;
+}
+
+
+function isValidEmail(email) {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+
+if (emailID && isValidEmail(emailID)) {
+  contactHtml += `
+    <a href="mailto:${emailID}" class="WE-icon">
+      <i class="fas fa-envelope"></i> Email
+    </a>
+  `;
+}
+
+
+if (phoneNumber) {
+  contactHtml += `
+    <a href="tel:${phoneNumber}" class="WE-icon">
+      <i class="fas fa-phone"></i> ${phoneNumber}
+    </a>
+  `;
+}
+
+
+document.getElementById("WEContact").innerHTML = contactHtml;
+
+
+
+let actionsHtml = "";
+
+
+actionsHtml += `
+  <a href="javascript:void(0)" id="downloadPdfBtn" class="WE-icon">
+    <i class="fa-solid fa-file-pdf"></i> Download PDF
+  </a>
+`;
+
+
+actionsHtml += `
+  <a href="javascript:void(0)" id="shareBtn" class="WE-icon">
+    <i class="fa-solid fa-share-nodes"></i> Share to Friend
+  </a>
+`;
+
+
+document.getElementById("WEActions").innerHTML = actionsHtml;
+
+
+
+document.addEventListener("click", async (e) => {
+  
+  if (e.target.closest("#shareBtn")) {
+    const shareData = {
+      title: document.title,
+      text: "Health Marathi Support | Address: 907, Ravalnath Colony, Ajara | Contact Number: 7498663848 | Visit: ",
+      url: window.location.href
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        console.log("Content shared successfully");
+      } catch (err) {
+        console.error("Sharing failed:", err);
+      }
+    } else {
+      alert("Sharing is not supported on this browser. Copy this link:\n" + window.location.href);
+    }
+  }
+
+  
+  if (e.target.closest("#downloadPdfBtn")) {
+    window.print(); 
+  }
+});
+</script>
+
+
+
+  <script>
+  
+  const socialIcons = document.getElementById("socialIcons");
+  if (!socialIcons.querySelector("a")) {
+      socialIcons.style.display = "none";
+  }
+</script>
+
+
+
+<script>
+  window.addEventListener("load", function() {
+    const ts = Date.now(); 
+
+    
+    document.querySelectorAll("img").forEach(el => {
+      const src = el.getAttribute("src");
+      if (src) {
+        el.src = src + (src.includes("?") ? "&" : "?") + "ts=" + ts;
+      }
+    });
+
+    
+    const ogImg = document.querySelector("meta[property='og:image']");
+    if (ogImg) {
+      const content = ogImg.getAttribute("content");
+      if (content) {
+        ogImg.setAttribute("content", content + (content.includes("?") ? "&" : "?") + "ts=" + ts);
+      }
+    }
+
+    
+    const favicon = document.querySelector("link[rel='icon']");
+    if (favicon) {
+      const href = favicon.getAttribute("href");
+      if (href) {
+        favicon.setAttribute("href", href + (href.includes("?") ? "&" : "?") + "ts=" + ts);
+      }
     }
   });
 </script>
 
+	
+<script>
+  
+  var businessDescription = `'\x3cp\x3eआमचे हॉस्पिटल आपल्या कुटुंबाच्या आरोग्यासाठी सर्वोत्तम सेवा प्रदान करते. आमच्याकडे अनुभवी आणि कुशल डॉक्टर आहेत जे आपल्याला सर्व प्रकारच्या आरोग्य समस्यांमध्ये मदत करू शकतात.\x3c\/p\x3e\x3cp\x3e\x3cbr\x3e\x3c\/p\x3e\x3cp\x3eआमच्या हॉस्पिटलमध्ये ताप, सर्दी, खोकला, डोकेदुखी, पोटदुखी, अतिसार, उलट्या, मूळव्याध, बद्धकोष्ठता, मुतखडा, कावीळ, टायफॉइड, डेंग्यू, मलेरिया, अंगदुखी, सांधेदुखी, अस्थमा, लठ्ठपणा, उच्च रक्तदाब, मधुमेह अशा अनेक आरोग्य समस्यांवर उपचार केले जातात.\x3c\/p\x3e\x3cp\x3e\x3cbr\x3e\x3c\/p\x3e\x3cp\x3eDr. \(Full Name\)\x3c\/p\x3e\x3cp\x3eQualification - \( M.D. \/ M.B.B.S. \/ B.A.M.S. \/ B.H.M.S. etc\)\x3c\/p\x3e\x3cp\x3eRegistration No. \(Number\)\x3c\/p\x3e'`;
+
+  
+  businessDescription = businessDescription.replace(/^'(.*)'$/, "$1");
+
+
+  businessDescription = businessDescription.replace(/<p>\s*<br>\s*<\/p>/g, '');
+ 
+
+  
+  document.getElementById("businessDescription").innerHTML = businessDescription;
+</script>
+    
+	<script>
+      function generateVCF(personName, businessName, mobileNumber, phoneNumber,businessAddress, websiteLink) {
+        const vcf = [
+          'BEGIN:VCARD',
+          'VERSION:3.0',
+          `FN:${personName}`,
+          `ORG:${businessName}`,
+          `TEL;TYPE=WORK,VOICE:${mobileNumber}`,
+		  `TEL;TYPE=CELL,VOICE:${phoneNumber}`,
+          `ADR;TYPE=WORK:;;${businessAddress}`,
+          `URL:${websiteLink}`,
+          'END:VCARD'
+        ].join('\n');
+        
+        return 'data:text/vcard;charset=utf-8,' + encodeURIComponent(vcf);
+      }
+
+      document.getElementById('downloadVCF').addEventListener('click', function() {
+        const personName = "Satish Upalkar";
+        const businessName = "Health Marathi Support";
+        const mobileNumber = "7498663848";
+		const phoneNumber = "";
+        const businessAddress = "907, Ravalnath Colony, Ajara";
+        const websiteLink = "";
+
+        const vcfData = generateVCF(personName, businessName, mobileNumber,  phoneNumber, businessAddress, websiteLink);
+        const link = document.createElement('a');
+        link.href = vcfData;
+        link.download = 'business.vcf';
+        link.click();
+      });
+	  
+	  
+	
+	</script> 
+	
+	<script>
+        function updateFestivalBanner() {
+            const festivalSelect = document.getElementById('festivalSelect');
+            const selectedValue = festivalSelect.value;
+            const festivalBanner = document.getElementById('festivalBanner');
+            const saveBannerButton = document.getElementById('saveBanner');
+            const shareBannerButton = document.getElementById('shareBanner');
+
+            if (selectedValue) {
+                const [festivalName, festivalImageUrl, backgroundColor, message1, message2] = selectedValue.split('|');
+                document.getElementById('festivalImage').src = festivalImageUrl;
+                festivalBanner.style.display = 'flex';
+                saveBannerButton.style.display = 'inline-block';
+                shareBannerButton.style.display = 'inline-block';
+                festivalBanner.style.backgroundColor = backgroundColor;
+                document.getElementById('messageLine1').textContent = message1;
+                document.getElementById('messageLine2').textContent = message2;
+            } else {
+                festivalBanner.style.backgroundColor = '';
+                festivalBanner.style.display = 'none';
+                saveBannerButton.style.display = 'none';
+                shareBannerButton.style.display = 'none';
+                document.getElementById('festivalImage').src = '';
+                document.getElementById('messageLine1').textContent = '';
+                document.getElementById('messageLine2').textContent = '';
+            }
+
+            
+			const image = document.getElementById("festivalImage");
+    const selected = document.getElementById("festivalSelect").value;
+			
+			 
+			
+			
+    image.onload = () => {
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: "smooth"
+        });
+    };
+        }
+
+        function saveBannerAsPng() {
+            const banner = document.getElementById('festivalBanner');
+
+            if (typeof html2canvas === 'undefined') {
+                console.error("html2canvas is not loaded. Please include it in your HTML.");
+                return;
+            }
+
+            html2canvas(banner, {
+                useCORS: true,
+                scale: 2
+            }).then(function(canvas) {
+                canvas.toBlob(function(blob) {
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = 'festival_banner.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                });
+            }).catch(error => {
+                console.error("Error capturing banner:", error);
+            });
+        }
+
+        function shareBanner() {
+            const banner = document.getElementById('festivalBanner');
+
+            if (typeof html2canvas === 'undefined') {
+                console.error("html2canvas is not loaded. Please include it in your HTML.");
+                return;
+            }
+
+            html2canvas(banner, {
+                useCORS: true,
+                scale: 2
+            }).then(function(canvas) {
+                canvas.toBlob(function(blob) {
+                    if (navigator.share) {
+                        navigator.share({
+                            title: 'Festival Banner',
+                            text: 'Check out this awesome festival banner!',
+                            files: [new File([blob], 'festival_banner.png', { type: 'image/png' })],
+                        })
+                        .then(() => console.log('Shared successfully'))
+                        .catch((error) => console.error('Error sharing:', error));
+                    } else {
+                        alert("Web Share API is not supported on your browser. You can save the image and share it manually.");
+                        const link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'festival_banner.png';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                });
+            }).catch(error => {
+                console.error("Error capturing banner for sharing:", error);
+            });
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+	
+	
 </body>
 </html>
